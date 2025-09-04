@@ -5,51 +5,82 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TELEC — Avisos OT</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- SheetJS to read Excel on the client -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
-    .fallback-container { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif; }
+    .app-bg { background: radial-gradient(1200px 400px at 50% -50%, rgba(0,0,0,0.04), transparent 70%); }
+    .card { box-shadow: 0 10px 30px rgba(2,6,23,.06); }
+    .muted { color: #64748b; }
     .sticky-th th { position: sticky; top: 0; background: #f8fafc; z-index: 1; }
+    .scroll-x { overflow-x: auto; }
     .chip { display:inline-block; padding:2px 8px; border-radius:9999px; font-size:12px; background:#eef2ff; }
-    .scroll-x { overflow-x:auto; }
-    .dropzone { border: 2px dashed #cbd5e1; border-radius: 1rem; padding: 1.25rem; text-align: center; transition: background 0.2s; }
+    .dropzone { border: 2px dashed #cbd5e1; border-radius: 1rem; padding: 1rem; text-align: center; transition: background .2s; }
     .dropzone.dragover { background: #f1f5f9; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-900 fallback-container">
-  <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-200">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight">TELEC — Avisos OT</h1>
-        <p class="text-sm text-slate-600">Panel de búsqueda y filtrado (encabezado conservado)</p>
+<body class="app-bg min-h-screen text-slate-900">
+  <!-- HERO HEADER (Mantener lo que se ve en la imagen) -->
+  <section class="max-w-6xl mx-auto p-3 md:p-6">
+    <div class="card bg-white rounded-2xl p-5 md:p-7 flex items-center gap-4 md:gap-8">
+      <!-- IZQUIERDA: LOGO + NOMBRE -->
+      <div class="flex items-center gap-3 shrink-0">
+        <!-- Logo simple (puedes reemplazar el src por tu SVG o PNG) -->
+        <svg width="40" height="40" viewBox="0 0 24 24" class="text-orange-500" fill="currentColor" aria-hidden="true">
+          <g transform="translate(12,12)">
+            <circle r="3"></circle>
+            <g stroke="currentColor" stroke-width="2" fill="none">
+              <line x1="0" y1="-11" x2="0" y2="-6" />
+              <line x1="0" y1="6" x2="0" y2="11" />
+              <line x1="-11" y1="0" x2="-6" y2="0" />
+              <line x1="6" y1="0" x2="11" y2="0" />
+              <line x1="8" y1="8" x2="5" y2="5" />
+              <line x1="-8" y1="-8" x2="-5" y2="-5" />
+              <line x1="-8" y1="8" x2="-5" y2="5" />
+              <line x1="8" y1="-8" x2="5" y2="-5" />
+            </g>
+          </g>
+        </svg>
+        <div class="leading-tight">
+          <div class="text-slate-700 font-medium">Pantaleon</div>
+        </div>
       </div>
-      <div class="text-right">
-        <p class="text-xs text-slate-500">Fuente: Archivo Excel de avisos OT (cárgalo abajo)</p>
-        <p id="loadInfo" class="text-xs text-slate-500">Sin datos cargados</p>
+
+      <!-- CENTRO: Título + subtítulo -->
+      <div class="text-center grow">
+        <div class="text-lg md:text-xl font-semibold">Extracción de Jugo</div>
+        <div class="muted text-sm">Área</div>
+      </div>
+
+      <!-- DERECHA: Hora / Fecha / Responsable -->
+      <div class="text-right shrink-0 leading-tight">
+        <div class="font-semibold" id="clock">16:50:36</div>
+        <div class="muted text-sm" id="dateLabel">Jueves, 04 de septiembre de 2025</div>
+        <div class="muted text-xs">Responsable: <span class="font-medium lowercase">mauricio ramos</span></div>
       </div>
     </div>
-  </header>
 
-  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <!-- Pie de tarjeta -->
+    <div class="text-center muted text-sm mt-2">Ingenio Pantaleon · Ubicación: Guatemala</div>
+  </section>
+
+  <!-- APP -->
+  <main class="max-w-6xl mx-auto p-3 md:p-6 space-y-6">
     <!-- Carga de Excel -->
-    <section class="bg-white shadow rounded-2xl p-4 md:p-6">
+    <section class="bg-white rounded-2xl card p-4 md:p-6">
       <div class="grid md:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium text-slate-700">Cargar Excel (avisos_OT)</label>
           <input id="fileInput" type="file" accept=".xlsx,.xls" class="mt-1 w-full border rounded-xl px-3 py-2" />
-          <p class="text-xs text-slate-500 mt-1">Sugerido: “Avisos _ OT TELEC 1.xlsx”. Se lee totalmente en el navegador, sin subirlo a servidores.</p>
+          <p class="text-xs muted mt-1">Sugerido: “Avisos _ OT TELEC 1.xlsx”. Se procesa 100% en tu navegador.</p>
         </div>
         <div>
-          <div id="drop" class="dropzone">
-            Arrastra y suelta aquí tu Excel<br>
-            <span class="text-xs text-slate-500">(o usa el selector de archivos)</span>
-          </div>
+          <div id="drop" class="dropzone">Arrastra y suelta aquí tu Excel<br><span class="text-xs muted">(o usa el selector de archivos)</span></div>
+          <p id="loadInfo" class="text-xs muted mt-2">Sin datos cargados</p>
         </div>
       </div>
     </section>
 
     <!-- Filtros -->
-    <section class="bg-white shadow rounded-2xl p-4 md:p-6">
+    <section class="bg-white rounded-2xl card p-4 md:p-6">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
         <div>
           <label class="block text-sm font-medium text-slate-700">Búsqueda rápida</label>
@@ -75,15 +106,13 @@
           </div>
         </div>
       </div>
-      <p class="text-xs text-slate-500 mt-2">El buscador acepta coincidencias parciales; los valores únicos se basan en la columna seleccionada.</p>
+      <p class="text-xs muted mt-2">El buscador acepta coincidencias parciales; los valores únicos se basan en la columna seleccionada.</p>
     </section>
 
-    <section id="resumen" class="hidden bg-white shadow rounded-2xl p-4 md:p-6"></section>
-
     <!-- Tabla -->
-    <section class="bg-white shadow rounded-2xl p-2 md:p-4">
+    <section class="bg-white rounded-2xl card p-2 md:p-4">
       <div class="flex items-center justify-between px-2 py-2">
-        <div class="text-sm text-slate-600">Mostrando <span id="countShown">0</span> de <span id="countTotal">0</span> registros</div>
+        <div class="text-sm muted">Mostrando <span id="countShown">0</span> de <span id="countTotal">0</span> registros</div>
         <div>
           <label class="text-sm text-slate-700">Filas por página:</label>
           <select id="pageSize" class="border rounded-lg px-2 py-1 ml-2">
@@ -104,7 +133,8 @@
       </div>
     </section>
 
-    <section class="bg-white shadow rounded-2xl p-4 md:p-6">
+    <!-- Ayuda -->
+    <section class="bg-white rounded-2xl card p-4 md:p-6">
       <details>
         <summary class="cursor-pointer font-medium">Ayuda y notas</summary>
         <ul class="list-disc pl-6 mt-2 text-sm text-slate-700 space-y-1">
@@ -117,6 +147,24 @@
   </main>
 
   <script>
+    // ----- Reloj y fecha en español (lado derecho del encabezado) -----
+    const clockEl = document.getElementById("clock");
+    const dateEl = document.getElementById("dateLabel");
+    function updateClock(){
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2,"0");
+      const mm = String(now.getMinutes()).padStart(2,"0");
+      const ss = String(now.getSeconds()).padStart(2,"0");
+      clockEl.textContent = `${hh}:${mm}:${ss}`;
+      const fmt = new Intl.DateTimeFormat("es-ES", { weekday:"long", day:"2-digit", month:"long", year:"numeric" });
+      const parts = fmt.format(now);
+      // Capitaliza la primera letra del día
+      const cap = parts.charAt(0).toUpperCase() + parts.slice(1);
+      dateEl.textContent = cap;
+    }
+    updateClock(); setInterval(updateClock, 1000);
+
+    // ----- App de datos -----
     let COLUMNS = [];
     let rawData = [];
     let state = { q: "", col: "", values: new Set(), sortCol: "", sortDir: 1, page: 1, pageSize: 25 };
@@ -264,14 +312,13 @@
       const url=URL.createObjectURL(blob);
       const a=document.createElement("a"); a.href=url; a.download="avisos_ot_filtrado.csv"; a.click(); URL.revokeObjectURL(url);
     }
-    $btnExport.addEventListener("click",()=>{ let rows=applyFilters(rawData); rows=applySort(rows); exportCSV(rows); });
+    document.getElementById("btnExport").addEventListener("click",()=>{ let rows=applyFilters(rawData); rows=applySort(rows); exportCSV(rows); });
 
-    // Drag & drop
+    // Drag & drop + file input
     ["dragenter","dragover"].forEach(ev=> $drop.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); $drop.classList.add("dragover"); }));
     ["dragleave","drop"].forEach(ev=> $drop.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); $drop.classList.remove("dragover"); }));
     $drop.addEventListener("drop",e=>{ if(e.dataTransfer.files && e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]); });
-
-    $file.addEventListener("change",e=>{ const f=e.target.files[0]; if(f) readFile(f); });
+    document.getElementById("fileInput").addEventListener("change",e=>{ const f=e.target.files[0]; if(f) readFile(f); });
 
     function readFile(file){
       const reader=new FileReader();
@@ -291,7 +338,7 @@
         const dc = detectDateCol();
         $dateColName.textContent = dc ? `(${dc})` : "";
         // Habilitar export
-        $btnExport.disabled = rawData.length === 0;
+        document.getElementById("btnExport").disabled = rawData.length === 0;
         render();
       };
       reader.readAsArrayBuffer(file);
