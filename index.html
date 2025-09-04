@@ -24,34 +24,20 @@
     .meta{justify-self:end;text-align:right}
     .meta .clock{font-variant-numeric:tabular-nums; font-weight:600}
     .meta .date{color:var(--muted);font-size:12px}
-    img.logo-img{height:90px;width:auto;display:block}
     .details{margin-top:8px;text-align:center;color:var(--muted);font-size:14px}
-
-    .toolbar{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .toolbar{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap}
     .btn{appearance:none;border:0;border-radius:12px;padding:10px 14px;background:var(--brand);color:#fff;font-weight:600;cursor:pointer;transition:.15s transform ease,.2s box-shadow ease}
     .btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(10,123,62,.25)}
-    .btn.secondary{background:#e9f6ef;color:var(--brand);}
-
-    .select{min-width:320px;padding:10px;border-radius:12px;border:1px solid #e5e7eb;background:#fff}
-    .input{padding:10px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;min-width:260px}
-    .pill{display:inline-flex;gap:8px;align-items:center;background:#fff;border:1px solid #e5e7eb;border-radius:999px;padding:6px 10px;font-size:12px;color:#374151}
-    .kv{display:grid;grid-template-columns:160px 1fr;gap:8px;max-width:800px;align-items:baseline}
-    .kv b{color:#374151}
+    .btn.secondary{background:#e9f6ef;color:var(--brand);} 
     .card{margin-top:16px;background:var(--card);border-radius:var(--radius);box-shadow:0 6px 20px rgba(0,0,0,.05);padding:18px}
-    table{width:100%;border-collapse:separate;border-spacing:0 8px}
-    th,td{text-align:left;padding:10px 12px}
-    thead th{font-size:12px;color:#6b7280;border-bottom:1px solid #e5e7eb}
-    tbody tr{background:#fff;border:1px solid #e5e7eb}
-    tbody tr td:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px}
-    tbody tr td:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px}
-    @media (max-width:768px){
+    .muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    @media (max-width: 768px){
       .header{grid-template-columns:1fr; text-align:center}
       .meta{justify-self:center}
       .area{justify-self:center}
-      .kv{grid-template-columns:1fr}
-      .select{min-width:unset;width:100%}
-      .input{min-width:unset;width:100%}
     }
+    img.logo-img{height:90px;width:auto;display:block}
   </style>
 </head>
 <body>
@@ -75,44 +61,18 @@
       Ingenio <span id="ingenio">Pantaleon</span> · Ubicación: <span id="ubicacion">Guatemala</span>
     </div>
 
-    <div class="toolbar" role="group" aria-label="Filtro y selección">
-      <input class="input" id="filtro" placeholder="Filtrar equipo por nombre..." />
-      <select class="select" id="equipos"></select>
-      <button class="btn secondary" id="btn-cambiar-resp">Cambiar responsable</button>
+    <div class="toolbar" role="group" aria-label="Acciones rápidas">
+      <button class="btn" id="btn-imprimir">Imprimir</button>
+      <button class="btn secondary" id="btn-cambiar-area" title="Cambia el texto del área">Cambiar área</button>
+      <button class="btn secondary" id="btn-cambiar-resp" title="Define el responsable">Cambiar responsable</button>
     </div>
 
-    <section class="card" id="metaCard" aria-live="polite">
-      <h3 style="margin:0 0 10px 0">Información del equipo</h3>
-      <div class="kv">
-        <b>Equipo</b><div id="m_equipo">—</div>
-        <b>Tipo</b><div id="m_tipo">—</div>
-        <b>Área</b><div id="m_area">—</div>
-        <b>Ubicación técnica</b><div id="m_ubi">—</div>
-        <b>Código SAP (máquina)</b><div id="m_sap">—</div>
-        <b>Marca del equipo</b><div id="m_marca_equipo">—</div>
-      </div>
-    </section>
-
     <section class="card">
-      <h3 style="margin:0 0 10px 0">Componentes y repuestos</h3>
-      <div style="overflow:auto">
-        <table>
-          <thead>
-            <tr>
-              <th>Componente</th>
-              <th>Características</th>
-              <th>Marca</th>
-              <th>Código repuesto</th>
-              <th>Descripción SAP</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
+      <h2 style="margin:0 0 8px 0">Bienvenido</h2>
+      <p class="muted">Este es el esqueleto inicial de la aplicación. El encabezado muestra el logo, la fecha y hora actuales en la zona horaria de Guatemala, el nombre del área, además del ingenio, ubicación y responsable. Desde aquí iremos agregando módulos (registros, buscadores, reportes, etc.).</p>
     </section>
   </div>
 
-  <script id="data" type="application/json">{"MESA 1": {"meta": {"tipo": "REDUCTOR", "area": "TANDEM B", "ubicacion_tecnica": "PSAI-AZ-EX-PC/MCB-MESA01", "codigo_sap_equipo": "", "marca_equipo": "SUMITOMO"}, "items": [{"componente": "ALTA", "caracteristicas": "", "marca": "SUMITOMO", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "REDUCTOR SUMITOMO": {"meta": {"tipo": "REDUCTOR", "area": "TANDEM B", "ubicacion_tecnica": "PSAI-AZ-EX-PC/MCB-MESA02", "codigo_sap_equipo": "", "marca_equipo": "SUMITOMO"}, "items": [{"componente": "ALTA", "caracteristicas": "", "marca": "SUMITOMO", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "RODO NIVELADOR 2": {"meta": {"tipo": "REDUCTOR", "area": "TANDEM B", "ubicacion_tecnica": "PSAI-AZ-EX-PC/MCB-MESA02", "codigo_sap_equipo": "", "marca_equipo": "FALK"}, "items": [{"componente": "ALTA", "caracteristicas": "", "marca": "FALK", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "TRASH 1": {"meta": {"tipo": "REDUCTOR", "area": "TANDEM B", "ubicacion_tecnica": "PSAI-AZ-EX-PC/COB-STRSTB", "codigo_sap_equipo": "", "marca_equipo": "SUMITOMO"}, "items": [{"componente": "ALTA", "caracteristicas": "", "marca": "SUMITOMO", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "TRASH 2": {"meta": {"tipo": "REDUCTOR", "area": "TANDEM B", "ubicacion_tecnica": "PSAI-AZ-EX-PC/COB-STRSTB", "codigo_sap_equipo": "", "marca_equipo": "SUMITOMO"}, "items": [{"componente": "ALTA", "caracteristicas": "", "marca": "SUMITOMO", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "MOLINO 4": {"meta": {"tipo": "REDUCTOR", "area": "TANDEM A", "ubicacion_tecnica": "", "codigo_sap_equipo": "", "marca_equipo": "RENK ZANINI"}, "items": [{"componente": "ALTA", "caracteristicas": "", "marca": "RENK ZANINI", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "MOLINO 5 ALTA": {"meta": {"tipo": "REDUCTOR", "area": "TANDEM B", "ubicacion_tecnica": "", "codigo_sap_equipo": "", "marca_equipo": ""}, "items": [{"componente": "ALTA", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "INTERMEDIO #6": {"meta": {"tipo": "REDUCTOR", "area": "TANDEM A", "ubicacion_tecnica": "", "codigo_sap_equipo": "", "marca_equipo": ""}, "items": [{"componente": "ALTA", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "INTERMEDIO #3": {"meta": {"tipo": "REDUCTOR", "area": "TANDEM A", "ubicacion_tecnica": "", "codigo_sap_equipo": "", "marca_equipo": ""}, "items": [{"componente": "ALTA", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "Bomba 1 Enfriamiento Variadores de Molinos": {"meta": {"tipo": "BOMBA", "area": "TORRE DE ENFRIAMIENTO", "ubicacion_tecnica": "PSAI-AZ-EX-MO/TEF", "codigo_sap_equipo": "120745", "marca_equipo": ""}, "items": [{"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "Bomba 2 Enfriamiento Variadores de Molinos": {"meta": {"tipo": "BOMBA", "area": "TORRE DE ENFRIAMIENTO", "ubicacion_tecnica": "PSAI-AZ-EX-MO/TEF", "codigo_sap_equipo": "120747", "marca_equipo": ""}, "items": [{"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "Bomba 1 Enfriamiento Hidraulicos MTA": {"meta": {"tipo": "BOMBA", "area": "TA", "ubicacion_tecnica": "PSAI-AZ-EX-MO/TEF", "codigo_sap_equipo": "109303", "marca_equipo": ""}, "items": [{"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "Bomba 2 Enfriamiento Hidraulicos Aux": {"meta": {"tipo": "BOMBA", "area": "TB", "ubicacion_tecnica": "PSAI-AZ-EX-MO/TEF", "codigo_sap_equipo": "109304", "marca_equipo": ""}, "items": [{"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "Bomba 3 Enfriamiento Hidraulicos MTB": {"meta": {"tipo": "BOMBA", "area": "TB", "ubicacion_tecnica": "PSAI-AZ-EX-MO/TEF", "codigo_sap_equipo": "109305", "marca_equipo": ""}, "items": [{"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "Bomba de Agua Asepsia #1 TA": {"meta": {"tipo": "BOMBA", "area": "TA", "ubicacion_tecnica": "PSAI-AZ-EX-MO/ASE", "codigo_sap_equipo": "137330", "marca_equipo": ""}, "items": [{"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "Bomba de Agua Asepsia #1 TB": {"meta": {"tipo": "BOMBA", "area": "TA", "ubicacion_tecnica": "PSAI-AZ-EX-MO/ASE", "codigo_sap_equipo": "137332", "marca_equipo": ""}, "items": [{"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "Bomba de Agua Asepsia Aux": {"meta": {"tipo": "BOMBA", "area": "TA", "ubicacion_tecnica": "PSAI-AZ-EX-MO/ASE", "codigo_sap_equipo": "137331", "marca_equipo": ""}, "items": [{"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "Bomba de Agua Imbibición 1 TB": {"meta": {"tipo": "BOMBA", "area": "TB", "ubicacion_tecnica": "PSAI-AZ-EX-MO/IMB", "codigo_sap_equipo": "109191", "marca_equipo": ""}, "items": [{"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}, {"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "Bomba de Agua Imbibición 1 TA": {"meta": {"tipo": "BOMBA", "area": "TA", "ubicacion_tecnica": "PSAI-AZ-EX-MO/ASE", "codigo_sap_equipo": "109182", "marca_equipo": ""}, "items": [{"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "Bomba de Agua Imbibición Aux TA/TB": {"meta": {"tipo": "BOMBA", "area": "TA", "ubicacion_tecnica": "PSAI-AZ-EX-MO/ASE", "codigo_sap_equipo": "121810", "marca_equipo": ""}, "items": [{"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "Bomba 2 Jugo Mezclado TA": {"meta": {"tipo": "BOMBA", "area": "TA", "ubicacion_tecnica": "PSAI-AZ-EX-MO/MJA-TQJMTA", "codigo_sap_equipo": "122147", "marca_equipo": ""}, "items": [{"componente": "POLEA", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "Bomba Retorno Agua de Molinos TB": {"meta": {"tipo": "BOMBA", "area": "TB", "ubicacion_tecnica": "PSAI-AZ-EX-MO/TCB", "codigo_sap_equipo": "123853", "marca_equipo": ""}, "items": [{"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "Bomba Retorno Agua de Molinos TA": {"meta": {"tipo": "BOMBA", "area": "TA", "ubicacion_tecnica": "PSAI-AZ-EX-MO/TCA", "codigo_sap_equipo": "123819", "marca_equipo": ""}, "items": [{"componente": "POLEA", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "MEZCLADOR #1 TA": {"meta": {"tipo": "BOMBA", "area": "TA", "ubicacion_tecnica": "", "codigo_sap_equipo": "", "marca_equipo": ""}, "items": [{"componente": "POLEA", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "MACERACIÓN #1 TB": {"meta": {"tipo": "BOMBA", "area": "TB", "ubicacion_tecnica": "", "codigo_sap_equipo": "", "marca_equipo": ""}, "items": [{"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "Bomba Maceración 2 TB": {"meta": {"tipo": "BOMBA", "area": "TB", "ubicacion_tecnica": "", "codigo_sap_equipo": "121815", "marca_equipo": ""}, "items": [{"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "FILTRADO #2": {"meta": {"tipo": "BOMBA", "area": "TA", "ubicacion_tecnica": "", "codigo_sap_equipo": "", "marca_equipo": ""}, "items": [{"componente": "COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "MACERACIÓN #4": {"meta": {"tipo": "BOMBA", "area": "TA", "ubicacion_tecnica": "", "codigo_sap_equipo": "", "marca_equipo": ""}, "items": [{"componente": "LADO POLEA", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}, "FILTRADO #1": {"meta": {"tipo": "BOMBA", "area": "TA", "ubicacion_tecnica": "", "codigo_sap_equipo": "", "marca_equipo": ""}, "items": [{"componente": "LADO COPLING", "caracteristicas": "", "marca": "", "codigo_repuesto": "", "descripcion_sap": "None"}]}}</script>
   <script>
     const GT_TZ = 'America/Guatemala';
     function updateClock(){
@@ -122,49 +82,51 @@
       document.getElementById('clock').textContent = time;
       document.getElementById('date').textContent = date.charAt(0).toUpperCase() + date.slice(1);
     }
-    updateClock(); setInterval(updateClock, 1000);
+    updateClock();
+    setInterval(updateClock, 1000);
 
-    function getParam(name){ const p = new URLSearchParams(window.location.search); return p.get(name); }
-    const respEl = document.getElementById('responsable');
-    function askResp(pref=''){ const name = prompt('Escribe el nombre del responsable:', pref || respEl.textContent.replace('(definir)','').trim()); if(name && name.trim()){ respEl.textContent = name.trim(); localStorage.setItem('pant_responsable', name.trim()); } }
-    document.getElementById('btn-cambiar-resp').addEventListener('click', () => askResp(''));
-    const saved = localStorage.getItem('pant_responsable'); const qp = getParam('responsable'); if(qp){ respEl.textContent = qp; localStorage.setItem('pant_responsable', qp);} else if(saved){ respEl.textContent = saved;} else { askResp(''); }
+    document.getElementById('btn-imprimir').addEventListener('click', () => window.print());
+    document.getElementById('btn-cambiar-area').addEventListener('click', () => {
+      const current = document.querySelector('.area div').textContent.trim();
+      const next = prompt('Escribe el nombre del área:', current);
+      if(next && next.trim()){
+        document.querySelector('.area div').textContent = next.trim();
+        document.title = `Pantaleon · ${next.trim()}`;
+      }
+    });
 
-    // Data
-    const DATA = JSON.parse(document.getElementById('data').textContent);
-    const equipos = Object.keys(DATA).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}));
-    const sel = document.getElementById('equipos');
-    const filtro = document.getElementById('filtro');
-    function renderOptions(filter=''){
-      sel.innerHTML='';
-      const list = filter? equipos.filter(e=>e.toLowerCase().includes(filter.toLowerCase())) : equipos;
-      list.forEach(eq=>{ const opt=document.createElement('option'); opt.value=eq; opt.textContent=eq; sel.appendChild(opt); });
+    function getParam(name){
+      const p = new URLSearchParams(window.location.search);
+      return p.get(name);
     }
-    renderOptions();
-    filtro.addEventListener('input', ()=>renderOptions(filtro.value));
 
-    function renderEquipo(nombre){
-      const d = DATA[nombre]; if(!d) return;
-      document.getElementById('m_equipo').textContent = nombre || '—';
-      document.getElementById('m_tipo').textContent = d.meta?.tipo || '—';
-      document.getElementById('m_area').textContent = d.meta?.area || '—';
-      document.getElementById('m_ubi').textContent = d.meta?.ubicacion_tecnica || '—';
-      document.getElementById('m_sap').textContent = d.meta?.codigo_sap_equipo || '—';
-      document.getElementById('m_marca_equipo').textContent = d.meta?.marca_equipo || '—';
-      const tbody = document.getElementById('tbody'); tbody.innerHTML='';
-      (d.items||[]).forEach(it=>{
-        const tr = document.createElement('tr');
-        const td = (t)=>{ const c=document.createElement('td'); c.textContent = (t||'').toString(); return c; };
-        tr.appendChild(td(it.componente));
-        tr.appendChild(td(it.caracteristicas));
-        tr.appendChild(td(it.marca));
-        tr.appendChild(td(it.codigo_repuesto));
-        tr.appendChild(td(it.descripcion_sap));
-        tbody.appendChild(tr);
-      });
+    const responsableEl = document.getElementById('responsable');
+    function askResponsable(pref=''){
+      const name = prompt('Escribe el nombre del responsable:', pref || responsableEl.textContent.replace('(definir)','').trim());
+      if(name && name.trim()){
+        responsableEl.textContent = name.trim();
+        localStorage.setItem('pant_responsable', name.trim());
+      }
     }
-    sel.addEventListener('change', ()=>renderEquipo(sel.value));
-    if(equipos.length){ sel.value = equipos[0]; renderEquipo(equipos[0]); }
+    const savedResp = localStorage.getItem('pant_responsable');
+    const qpResp = getParam('responsable');
+    if(qpResp){
+      responsableEl.textContent = qpResp;
+      localStorage.setItem('pant_responsable', qpResp);
+    } else if(savedResp){
+      responsableEl.textContent = savedResp;
+    } else {
+      askResponsable('');
+    }
+    const btnResp = document.getElementById('btn-cambiar-resp');
+    if(btnResp){ btnResp.addEventListener('click', () => askResponsable('')); }
+
+    const ingenioEl = document.getElementById('ingenio');
+    const ubicEl = document.getElementById('ubicacion');
+    const qpIng = getParam('ingenio');
+    const qpUbi = getParam('ubicacion');
+    if(qpIng){ ingenioEl.textContent = qpIng; }
+    if(qpUbi){ ubicEl.textContent = qpUbi; }
   </script>
 </body>
 </html>
