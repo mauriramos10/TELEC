@@ -161,5 +161,176 @@
       if(first){ first.click(); }
     })();
   </script>
+
+  <section class="max-w-6xl mx-auto p-3 md:p-6">
+    <div class="bg-white rounded-2xl border card p-4 md:p-6">
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700">Cargar Excel (F..EG)</label>
+          <input id="fileInput" type="file" accept=".xlsx,.xls" class="mt-1 w-full border rounded-xl px-3 py-2" />
+          <p class="text-xs text-slate-500 mt-1">Se procesa localmente. Rango usado: columnas F a EG (incl.).</p>
+        </div>
+        <div>
+          <div id="drop" class="dropzone">Arrastra y suelta tu Excel aquí<br><span class="text-xs text-slate-500">(o usa el selector)</span></div>
+          <p id="loadInfo" class="text-xs text-slate-500 mt-2">Sin datos cargados</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+(function(){
+  function norm(s){ return (s==null?"":String(s)).normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase(); }
+  function colLetterToIndex(col){ let n=0; for(let i=0;i<col.length;i++){ n=n*26+(col.charCodeAt(i)-64);} return n-1; }
+
+  const START_COL = colLetterToIndex("F");
+  const END_COL   = colLetterToIndex("EG");
+  const BN_INDEX  = colLetterToIndex("BN");
+
+  let headers = [];
+  let dataRows = [];
+  let bnMap = new Map();
+  let tipoActual = "";
+  let bnActual = "";
+
+  const $bn = document.getElementById("bnSelect");
+  const $tipo = document.getElementById("tipoActual");
+  const $panel = document.getElementById("panelTipoEquipo");
+  const $drop = document.getElementById("drop");
+  const $file = document.getElementById("fileInput");
+  const $loadInfo = document.getElementById("loadInfo");
+
+  function readFile(file){
+    const reader=new FileReader();
+    reader.onload=(e)=>{
+      const wb = XLSX.read(new Uint8Array(e.target.result), {type:"array"});
+      const sheetName = wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const aoa = XLSX.utils.sheet_to_json(ws, {header:1, defval:""});
+      if(!aoa.length){ $loadInfo.textContent="Hoja vacía"; return; }
+
+      const hdrRow = aoa[0];
+      headers = hdrRow.slice(START_COL, END_COL+1).map(h => String(h||"").trim());
+      headers = headers.map((h,i)=> h || `Col_${i+START_COL+1}`);
+
+      dataRows = [];
+      bnMap = new Map();
+
+      for(let r=1;r<aoa.length;r++){
+        const full = aoa[r];
+        const slice = full.slice(START_COL, END_COL+1);
+        const obj = {};
+        headers.forEach((h,idx)=>{
+          const val = slice[idx];
+          if(String(val||"").trim()!==""){ obj[h] = val; }
+        });
+        let bnVal = "";
+        const bnHeaderIndex = headers.findIndex(h => /^BN$/i.test(h));
+        if (bnHeaderIndex >= 0) {
+          bnVal = String(slice[bnHeaderIndex] ?? "").trim();
+        }
+        if (!bnVal) {
+          bnVal = String(full[BN_INDEX] ?? "").trim();
+        }
+        if (Object.keys(obj).length && bnVal){
+          dataRows.push(obj);
+          bnMap.set(bnVal, obj);
+        }
+      }
+
+      $bn.innerHTML = "";
+      if(!bnMap.size){
+        $bn.innerHTML = '<option value="">— No se detectó columna BN con valores —</option>';
+      }else{
+        const frag = document.createDocumentFragment();
+        const opt0 = document.createElement("option"); opt0.value=""; opt0.textContent="— Selecciona BN —"; frag.appendChild(opt0);
+        Array.from(bnMap.keys()).sort((a,b)=> String(a).localeCompare(String(b),'es',{sensitivity:'base'})).forEach(key=>{
+          const o=document.createElement("option"); o.value=key; o.textContent=key; frag.appendChild(o);
+        });
+        $bn.appendChild(frag);
+      }
+      $loadInfo.textContent = `Hoja: ${sheetName} — Registros (F..EG): ${dataRows.length} — BN detectados: ${bnMap.size}`;
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  if($file){
+    $file.addEventListener("change", e => { const f=e.target.files[0]; if(f) readFile(f); });
+  }
+  if($drop){
+    ["dragenter","dragover"].forEach(ev=> $drop.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); $drop.classList.add("dragover"); }));
+    ["dragleave","drop"].forEach(ev=> $drop.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); $drop.classList.remove("dragover"); }));
+    $drop.addEventListener("drop", e => { if(e.dataTransfer.files && e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]); });
+  }
+
+  window.addEventListener("equipo-seleccion", (ev)=>{
+    tipoActual = ev.detail || "";
+    document.getElementById("tipoActual").textContent = tipoActual || "—";
+    renderPanel();
+  });
+
+  $bn.addEventListener("change", () => {
+    bnActual = $bn.value || "";
+    renderPanel();
+  });
+
+  function getByPattern(obj, pattern){
+    const re = new RegExp(pattern, 'i');
+    const key = Object.keys(obj).find(k => re.test(k));
+    return key ? obj[key] : "";
+  }
+
+  function renderPanel(){
+    const obj = bnActual ? bnMap.get(bnActual) : null;
+    if (!tipoActual || !obj){
+      $panel.innerHTML = '<div class="text-slate-500 text-sm">Selecciona un <b>tipo de equipo</b> y un <b>BN</b> para ver su ficha.</div>';
+      return;
+    }
+    if (/^MOTOR ELECTRICO$/i.test(tipoActual)){
+      const rodAcople = getByPattern(obj, '(acople|lado\s*acople|rodamiento.*acople|bearing.*(acople|coupling))');
+      const rodVent   = getByPattern(obj, '(ventilador|lado\s*ventilador|rodamiento.*ventilador|bearing.*(fan|vent))');
+
+      const rows = [];
+      if (rodAcople) rows.push(['Número de rodamiento lado acople', rodAcople]);
+      if (rodVent)   rows.push(['Número de rodamiento lado ventilador', rodVent]);
+
+      $panel.innerHTML = buildKVPanel('MOTOR ELÉCTRICO', rows);
+      return;
+    }
+    if (/^VARIADOR DE FRECUENCIA$/i.test(tipoActual)){
+      const serie  = getByPattern(obj, '(\bserie\b|serial|s/?n|sn|n/?s).*');
+      const marca  = getByPattern(obj, '\bmarca\b.*|.*\bmarca\b');
+      const potHP  = getByPattern(obj, '(potenc(ia)?|\bhp\b|horse.?power).*');
+
+      const rows = [];
+      if (serie) rows.push(['Serie del VDF', serie]);
+      if (marca) rows.push(['Marca del VDF', marca]);
+      if (potHP) rows.push(['Potencia (HP)', potHP]);
+
+      $panel.innerHTML = buildKVPanel('VARIADOR DE FRECUENCIA', rows);
+      return;
+    }
+    $panel.innerHTML = '<div class="text-slate-500 text-sm">No hay plantilla definida para este tipo todavía.</div>';
+  }
+
+  function buildKVPanel(title, rows){
+    if (!rows.length){
+      return `<div class="rounded-2xl border p-4 md:p-6"><div class="text-lg font-bold">${title}</div><div class="text-slate-500 mt-2">No hay datos disponibles en esta ficha (campos vacíos en el Excel).</div></div>`;
+    }
+    const kv = rows.map(([k,v]) => `<div class="muted">${k}</div><div>${v}</div>`).join("");
+    return `<div class="rounded-2xl border p-4 md:p-6">
+      <div class="flex items-center justify-between">
+        <div class="text-lg font-bold">${title}</div>
+      </div>
+      <div class="mt-4" style="display:grid;grid-template-columns:260px 1fr;gap:.5rem 1rem;">
+        ${kv}
+      </div>
+    </div>`;
+  }
+})();
+</script>
+
 </body>
 </html>
