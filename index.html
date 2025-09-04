@@ -128,5 +128,38 @@
     if(qpIng){ ingenioEl.textContent = qpIng; }
     if(qpUbi){ ubicEl.textContent = qpUbi; }
   </script>
+
+  <!-- Selector de equipos -->
+  <section class="max-w-6xl mx-auto p-3 md:p-6">
+    <div class="bg-white rounded-2xl border card p-3 md:p-4">
+      <div id="equiposToolbar" class="flex flex-wrap gap-2">
+        <button type="button" class="px-3 py-2 rounded-xl border hover:bg-slate-50" data-eq="MOTOR ELECTRICO">MOTOR ELECTRICO</button>
+        <button type="button" class="px-3 py-2 rounded-xl border hover:bg-slate-50" data-eq="TRANSFORMADOR">TRANSFORMADOR</button>
+        <button type="button" class="px-3 py-2 rounded-xl border hover:bg-slate-50" data-eq="AIRE ACONDICIONADO">AIRE ACONDICIONADO</button>
+        <button type="button" class="px-3 py-2 rounded-xl border hover:bg-slate-50" data-eq="VARIADOR DE FRECUENCIA">VARIADOR DE FRECUENCIA</button>
+        <button type="button" class="px-3 py-2 rounded-xl border hover:bg-slate-50" data-eq="ARRANCADOR DIRECTO/SUAVE">ARRANCADOR DIRECTO/SUAVE</button>
+        <button type="button" class="px-3 py-2 rounded-xl border hover:bg-slate-50" data-eq="MANEJADORA DE AIRE">MANEJADORA DE AIRE</button>
+        <button type="button" class="px-3 py-2 rounded-xl border hover:bg-slate-50" data-eq="CHILLER">CHILLER</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (function(){
+      const tb = document.getElementById('equiposToolbar');
+      if(!tb) return;
+      tb.addEventListener('click', (e)=>{
+        const btn = e.target.closest('button[data-eq]');
+        if(!btn) return;
+        tb.querySelectorAll('button[data-eq]').forEach(b=>b.classList.remove('active','bg-indigo-600','text-white','border-indigo-600'));
+        btn.classList.add('active','bg-indigo-600','text-white','border-indigo-600');
+        window.EQUIPO_SELECCION = btn.dataset.eq;
+        window.dispatchEvent(new CustomEvent('equipo-seleccion',{ detail: btn.dataset.eq }));
+      });
+      // Selección inicial opcional
+      const first = tb.querySelector('button[data-eq]');
+      if(first){ first.click(); }
+    })();
+  </script>
 </body>
 </html>
