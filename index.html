@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TELEC — Avisos OT</title>
+  <title>TELEC — Equipos (F..EG)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -12,18 +12,17 @@
     .muted { color: #64748b; }
     .sticky-th th { position: sticky; top: 0; background: #f8fafc; z-index: 1; }
     .scroll-x { overflow-x: auto; }
-    .chip { display:inline-block; padding:2px 8px; border-radius:9999px; font-size:12px; background:#eef2ff; }
     .dropzone { border: 2px dashed #cbd5e1; border-radius: 1rem; padding: 1rem; text-align: center; transition: background .2s; }
     .dropzone.dragover { background: #f1f5f9; }
+    .kv { display:grid; grid-template-columns: 220px 1fr; gap:.5rem 1rem; }
+    @media (max-width: 640px){ .kv { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body class="app-bg min-h-screen text-slate-900">
-  <!-- HERO HEADER (Mantener lo que se ve en la imagen) -->
+  <!-- Encabezado como tu imagen -->
   <section class="max-w-6xl mx-auto p-3 md:p-6">
     <div class="card bg-white rounded-2xl p-5 md:p-7 flex items-center gap-4 md:gap-8">
-      <!-- IZQUIERDA: LOGO + NOMBRE -->
       <div class="flex items-center gap-3 shrink-0">
-        <!-- Logo simple (puedes reemplazar el src por tu SVG o PNG) -->
         <svg width="40" height="40" viewBox="0 0 24 24" class="text-orange-500" fill="currentColor" aria-hidden="true">
           <g transform="translate(12,12)">
             <circle r="3"></circle>
@@ -43,34 +42,27 @@
           <div class="text-slate-700 font-medium">Pantaleon</div>
         </div>
       </div>
-
-      <!-- CENTRO: Título + subtítulo -->
       <div class="text-center grow">
         <div class="text-lg md:text-xl font-semibold">Extracción de Jugo</div>
         <div class="muted text-sm">Área</div>
       </div>
-
-      <!-- DERECHA: Hora / Fecha / Responsable -->
       <div class="text-right shrink-0 leading-tight">
-        <div class="font-semibold" id="clock">16:50:36</div>
-        <div class="muted text-sm" id="dateLabel">Jueves, 04 de septiembre de 2025</div>
+        <div class="font-semibold" id="clock">--:--:--</div>
+        <div class="muted text-sm" id="dateLabel">—</div>
         <div class="muted text-xs">Responsable: <span class="font-medium lowercase">mauricio ramos</span></div>
       </div>
     </div>
-
-    <!-- Pie de tarjeta -->
     <div class="text-center muted text-sm mt-2">Ingenio Pantaleon · Ubicación: Guatemala</div>
   </section>
 
-  <!-- APP -->
   <main class="max-w-6xl mx-auto p-3 md:p-6 space-y-6">
     <!-- Carga de Excel -->
     <section class="bg-white rounded-2xl card p-4 md:p-6">
       <div class="grid md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-slate-700">Cargar Excel (avisos_OT)</label>
+          <label class="block text-sm font-medium text-slate-700">Cargar Excel (se usará solo F..EG)</label>
           <input id="fileInput" type="file" accept=".xlsx,.xls" class="mt-1 w-full border rounded-xl px-3 py-2" />
-          <p class="text-xs muted mt-1">Sugerido: “Avisos _ OT TELEC 1.xlsx”. Se procesa 100% en tu navegador.</p>
+          <p class="text-xs muted mt-1">Se procesa localmente en tu navegador.</p>
         </div>
         <div>
           <div id="drop" class="dropzone">Arrastra y suelta aquí tu Excel<br><span class="text-xs muted">(o usa el selector de archivos)</span></div>
@@ -79,75 +71,27 @@
       </div>
     </section>
 
-    <!-- Filtros -->
+    <!-- Controles -->
     <section class="bg-white rounded-2xl card p-4 md:p-6">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+      <div class="grid md:grid-cols-3 gap-4 items-end">
         <div>
-          <label class="block text-sm font-medium text-slate-700">Búsqueda rápida</label>
-          <input id="q" type="search" placeholder="Buscar en todas las columnas..." class="mt-1 w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-slate-700">Filtrar por columna</label>
-          <select id="col" class="mt-1 w-full border rounded-xl px-3 py-2"></select>
+          <label class="block text-sm font-medium text-slate-700">Buscar en campos (F..EG)</label>
+          <input id="q" type="search" placeholder="Equipo, descripción, etc." class="mt-1 w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
         </div>
         <div class="flex gap-2">
-          <button id="btnClear" class="grow border rounded-xl px-3 py-2 hover:bg-slate-50">Limpiar filtros</button>
+          <button id="btnClear" class="grow border rounded-xl px-3 py-2 hover:bg-slate-50">Limpiar</button>
           <button id="btnExport" class="grow bg-indigo-600 text-white rounded-xl px-3 py-2 hover:bg-indigo-700" disabled>Exportar CSV</button>
         </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-        <div id="valuesContainer" class="col-span-1 md:col-span-2"></div>
-        <div>
-          <label class="block text-sm font-medium text-slate-700">Rango de fechas <span id="dateColName" class="text-slate-400"></span></label>
-          <div class="mt-1 grid grid-cols-2 gap-2">
-            <input id="dateFrom" type="date" class="w-full border rounded-xl px-3 py-2" />
-            <input id="dateTo" type="date" class="w-full border rounded-xl px-3 py-2" />
-          </div>
-        </div>
-      </div>
-      <p class="text-xs muted mt-2">El buscador acepta coincidencias parciales; los valores únicos se basan en la columna seleccionada.</p>
-    </section>
-
-    <!-- Tabla -->
-    <section class="bg-white rounded-2xl card p-2 md:p-4">
-      <div class="flex items-center justify-between px-2 py-2">
-        <div class="text-sm muted">Mostrando <span id="countShown">0</span> de <span id="countTotal">0</span> registros</div>
-        <div>
-          <label class="text-sm text-slate-700">Filas por página:</label>
-          <select id="pageSize" class="border rounded-lg px-2 py-1 ml-2">
-            <option>10</option><option selected>25</option><option>50</option><option>100</option>
-          </select>
-        </div>
-      </div>
-      <div class="scroll-x">
-        <table id="table" class="w-full text-left text-sm">
-          <thead class="sticky-th"><tr id="thead" class="bg-slate-100"></tr></thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
-      <div class="flex items-center justify-between px-2 py-3">
-        <button id="prev" class="border rounded-lg px-3 py-1 disabled:opacity-50">Anterior</button>
-        <div class="text-sm">Página <span id="pageNum">1</span> / <span id="pageTotal">1</span></div>
-        <button id="next" class="border rounded-lg px-3 py-1 disabled:opacity-50">Siguiente</button>
+        <div class="text-right muted text-sm">Equipos mostrados: <span id="countShown">0</span></div>
       </div>
     </section>
 
-    <!-- Ayuda -->
-    <section class="bg-white rounded-2xl card p-4 md:p-6">
-      <details>
-        <summary class="cursor-pointer font-medium">Ayuda y notas</summary>
-        <ul class="list-disc pl-6 mt-2 text-sm text-slate-700 space-y-1">
-          <li>La carga del Excel es <b>local</b> (nunca se sube a Internet).</li>
-          <li>Puedes reusar el mismo HTML con nuevos Excels sin cambiar el código.</li>
-          <li>Si existe una columna llamada “Fecha…”, verás el filtro por rango.</li>
-        </ul>
-      </details>
-    </section>
+    <!-- Lista de equipos (solo campos con valor) -->
+    <section id="cards" class="space-y-3"></section>
   </main>
 
   <script>
-    // ----- Reloj y fecha en español (lado derecho del encabezado) -----
+    // Reloj/fecha
     const clockEl = document.getElementById("clock");
     const dateEl = document.getElementById("dateLabel");
     function updateClock(){
@@ -157,192 +101,146 @@
       const ss = String(now.getSeconds()).padStart(2,"0");
       clockEl.textContent = `${hh}:${mm}:${ss}`;
       const fmt = new Intl.DateTimeFormat("es-ES", { weekday:"long", day:"2-digit", month:"long", year:"numeric" });
-      const parts = fmt.format(now);
-      // Capitaliza la primera letra del día
-      const cap = parts.charAt(0).toUpperCase() + parts.slice(1);
-      dateEl.textContent = cap;
+      const txt = fmt.format(now);
+      dateEl.textContent = txt.charAt(0).toUpperCase() + txt.slice(1);
     }
     updateClock(); setInterval(updateClock, 1000);
 
-    // ----- App de datos -----
-    let COLUMNS = [];
-    let rawData = [];
-    let state = { q: "", col: "", values: new Set(), sortCol: "", sortDir: 1, page: 1, pageSize: 25 };
+    // Utilidades
+    function colLetterToIndex(col){ // 0-based
+      let n=0;
+      for (let i=0;i<col.length;i++){ n = n*26 + (col.charCodeAt(i)-64); }
+      return n-1;
+    }
+    const START_COL = colLetterToIndex("F");  // inclusive
+    const END_COL   = colLetterToIndex("EG"); // inclusive
 
+    function norm(s){ return (s==null?"":String(s)).normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase(); }
+
+    // Estado
+    let headers = [];
+    let rows = []; // [{header:value,...}, ...] solo F..EG
+    let filtered = [];
+
+    // DOM
     const $file = document.getElementById("fileInput");
     const $drop = document.getElementById("drop");
     const $loadInfo = document.getElementById("loadInfo");
     const $q = document.getElementById("q");
-    const $col = document.getElementById("col");
-    const $valuesContainer = document.getElementById("valuesContainer");
-    const $dateFrom = document.getElementById("dateFrom");
-    const $dateTo = document.getElementById("dateTo");
-    const $dateColName = document.getElementById("dateColName");
     const $btnClear = document.getElementById("btnClear");
     const $btnExport = document.getElementById("btnExport");
-    const $thead = document.getElementById("thead");
-    const $tbody = document.getElementById("tbody");
+    const $cards = document.getElementById("cards");
     const $countShown = document.getElementById("countShown");
-    const $countTotal = document.getElementById("countTotal");
-    const $pageSize = document.getElementById("pageSize");
-    const $prev = document.getElementById("prev");
-    const $next = document.getElementById("next");
-    const $pageNum = document.getElementById("pageNum");
-    const $pageTotal = document.getElementById("pageTotal");
-    const $resumen = document.getElementById("resumen");
-
-    function norm(s){ return (s==null?"":String(s)).normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase(); }
-    function uniqueValues(col){ const s=new Set(); for(const r of rawData) s.add(String(r[col]??"")); return [...s].filter(v=>v!=="").sort(); }
-    function detectDateCol(){ return COLUMNS.find(c=>/fecha/i.test(c)) || ""; }
-    function parseDate(s){
-      if(!s) return null;
-      if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s+"T00:00:00");
-      const m=/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/.exec(s);
-      if(m){const d=m[1].padStart(2,"0"), mo=m[2].padStart(2,"0"), y=m[3].padStart(4,"20"); return new Date(`${y}-${mo}-${d}T00:00:00`);}
-      const d=new Date(s); return isNaN(d)?null:d;
-    }
-
-    function renderColumnSelect(){
-      $col.innerHTML="";
-      for(const c of COLUMNS){ const o=document.createElement("option"); o.value=c; o.textContent=c; $col.appendChild(o); }
-      state.col = COLUMNS[0] || "";
-      $col.value = state.col;
-    }
-    function renderValues(){
-      const values=uniqueValues(state.col).slice(0,400), sel=state.values;
-      const wrap=document.createElement("div");
-      wrap.className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-56 overflow-auto border rounded-xl p-2";
-      for(const v of values){
-        const id="v_"+Math.random().toString(36).slice(2);
-        const box=document.createElement("div"); box.className="flex items-center gap-2";
-        box.innerHTML=`<input id="${id}" type="checkbox" class="h-4 w-4" ${(sel.has(v)?"checked":"")}>
-                        <label for="${id}" class="text-sm"></label>`;
-        box.querySelector("label").textContent=v;
-        box.querySelector("input").addEventListener("change",e=>{ if(e.target.checked) sel.add(v); else sel.delete(v); state.page=1; render(); });
-        wrap.appendChild(box);
-      }
-      $valuesContainer.innerHTML="";
-      const label=document.createElement("div"); label.className="text-sm font-medium text-slate-700 mb-1"; label.textContent="Valores únicos de: "+(state.col||"-");
-      $valuesContainer.appendChild(label);
-      $valuesContainer.appendChild(wrap);
-    }
-
-    function applyFilters(rows){
-      let out=rows;
-      if(state.q.trim()!==""){ const qn=norm(state.q); out=out.filter(r=>COLUMNS.some(c=>norm(r[c]).includes(qn))); }
-      if(state.values.size>0){ out=out.filter(r=>state.values.has(String(r[state.col]??""))); }
-      const DATE_COL = detectDateCol();
-      if(DATE_COL && ($dateFrom.value || $dateTo.value)){
-        const from=$dateFrom.value?new Date($dateFrom.value+"T00:00:00"):null;
-        const to=$dateTo.value?new Date($dateTo.value+"T23:59:59"):null;
-        out=out.filter(r=>{ const d=parseDate(String(r[DATE_COL])); if(!d) return false; if(from&&d<from) return false; if(to&&d>to) return false; return true; });
-      }
-      return out;
-    }
-    function applySort(rows){
-      if(!state.sortCol) return rows;
-      const col=state.sortCol, dir=state.sortDir;
-      return [...rows].sort((a,b)=>{
-        const av=String(a[col]??""), bv=String(b[col]??"");
-        const an=parseFloat(av.replace(",",".")), bn=parseFloat(bv.replace(",","."));
-        const aNum=!isNaN(an)&&av.trim()!=="", bNum=!isNaN(bn)&&bv.trim()!=="";
-        if(aNum&&bNum) return (an-bn)*dir;
-        return av.localeCompare(bv,"es",{sensitivity:"base"})*dir;
-      });
-    }
-    function renderTableHeader(){
-      $thead.innerHTML="";
-      for(const c of COLUMNS){
-        const th=document.createElement("th"); th.className="px-3 py-2 border-b border-slate-200 whitespace-nowrap cursor-pointer select-none"; th.textContent=c;
-        th.addEventListener("click",()=>{ if(state.sortCol===c) state.sortDir*=-1; else {state.sortCol=c; state.sortDir=1;} render(); });
-        if(state.sortCol===c){ const s=document.createElement("span"); s.className="ml-1 text-slate-500"; s.textContent=state.sortDir>0?"▲":"▼"; th.appendChild(s); }
-        $thead.appendChild(th);
-      }
-    }
-    function renderResumen(rows){
-      const statusCol=COLUMNS.find(c=>/estado|situacion|status/i.test(c));
-      if(!statusCol){ $resumen.classList.add("hidden"); return; }
-      const map=new Map(); for(const r of rows){ const k=String(r[statusCol]??""); map.set(k,(map.get(k)||0)+1); }
-      const items=[...map.entries()].sort((a,b)=>b[1]-a[1]);
-      const chips=items.map(([k,v])=>`<div class="px-3 py-2 rounded-xl border bg-slate-50"><div class="text-xs text-slate-500">${statusCol}</div><div class="font-semibold">${k||"(vacío)"} — ${v}</div></div>`).join("");
-      $resumen.innerHTML=`<div class="flex flex-wrap gap-2">${chips}</div>`; $resumen.classList.remove("hidden");
-    }
-    function renderTableBody(rows){
-      $tbody.innerHTML="";
-      const start=(state.page-1)*state.pageSize, pageRows=rows.slice(start,start+state.pageSize);
-      for(const r of pageRows){
-        const tr=document.createElement("tr");
-        for(const c of COLUMNS){
-          const td=document.createElement("td"); td.className="px-3 py-2 border-b border-slate-100 align-top";
-          const val=r[c]; let text=String(val??"");
-          if(/alta|high|crítica|critica|urgente/i.test(text)) td.classList.add("bg-red-50");
-          if(/media|medio/i.test(text)) td.classList.add("bg-yellow-50");
-          if(/baja|low/i.test(text)) td.classList.add("bg-green-50");
-          td.textContent=text; tr.appendChild(td);
-        }
-        $tbody.appendChild(tr);
-      }
-    }
-    function render(){
-      let rows=applyFilters(rawData); rows=applySort(rows);
-      $countTotal.textContent=rawData.length; $countShown.textContent=rows.length;
-      const totalPages=Math.max(1,Math.ceil(rows.length/state.pageSize));
-      if(state.page>totalPages) state.page=totalPages;
-      $pageNum.textContent=state.page; $pageTotal.textContent=totalPages;
-      $prev.disabled=state.page<=1; $next.disabled=state.page>=totalPages;
-      renderTableHeader(); renderResumen(rows); renderTableBody(rows);
-      $btnExport.disabled = rows.length===0;
-    }
-
-    $q.addEventListener("input",e=>{ state.q=e.target.value; state.page=1; render(); });
-    $col.addEventListener("change",e=>{ state.col=e.target.value; state.values=new Set(); state.page=1; renderValues(); render(); });
-    $dateFrom.addEventListener("change",()=>{ state.page=1; render(); });
-    $dateTo.addEventListener("change",()=>{ state.page=1; render(); });
-    $btnClear.addEventListener("click",()=>{ state={ q:"", col:COLUMNS[0]||"", values:new Set(), sortCol:"", sortDir:1, page:1, pageSize:state.pageSize }; $q.value=""; $col.value=state.col; $dateFrom.value=""; $dateTo.value=""; renderValues(); render(); });
-    $pageSize.addEventListener("change",e=>{ state.pageSize=parseInt(e.target.value,10); state.page=1; render(); });
-    $prev.addEventListener("click",()=>{ if(state.page>1){ state.page--; render(); } });
-    $next.addEventListener("click",()=>{ state.page++; render(); });
-
-    function exportCSV(rows){
-      const header=COLUMNS.join(",");
-      const esc=v=>{ if(v==null) return ""; const s=String(v).replace(/"/g,'""'); return /[",\n]/.test(s)?`"${s}"`:s; };
-      const lines=rows.map(r=>COLUMNS.map(c=>esc(r[c])).join(","));
-      const csv=[header,...lines].join("\n");
-      const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement("a"); a.href=url; a.download="avisos_ot_filtrado.csv"; a.click(); URL.revokeObjectURL(url);
-    }
-    document.getElementById("btnExport").addEventListener("click",()=>{ let rows=applyFilters(rawData); rows=applySort(rows); exportCSV(rows); });
-
-    // Drag & drop + file input
-    ["dragenter","dragover"].forEach(ev=> $drop.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); $drop.classList.add("dragover"); }));
-    ["dragleave","drop"].forEach(ev=> $drop.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); $drop.classList.remove("dragover"); }));
-    $drop.addEventListener("drop",e=>{ if(e.dataTransfer.files && e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]); });
-    document.getElementById("fileInput").addEventListener("change",e=>{ const f=e.target.files[0]; if(f) readFile(f); });
 
     function readFile(file){
-      const reader=new FileReader();
-      reader.onload=(e)=>{
-        const data=new Uint8Array(e.target.result);
-        const wb=XLSX.read(data,{type:"array"});
+      const reader = new FileReader();
+      reader.onload = (e)=>{
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, {type:"array"});
         const sheetName = wb.SheetNames[0];
-        const ws=wb.Sheets[sheetName];
-        const json=XLSX.utils.sheet_to_json(ws,{defval:""});
-        rawData=json;
-        COLUMNS = json.length ? Object.keys(json[0]) : [];
-        state.col = COLUMNS[0] || "";
-        $loadInfo.textContent = `Hoja: ${sheetName} — Registros: ${rawData.length}`;
-        renderColumnSelect();
-        renderValues();
-        // Fecha
-        const dc = detectDateCol();
-        $dateColName.textContent = dc ? `(${dc})` : "";
-        // Habilitar export
-        document.getElementById("btnExport").disabled = rawData.length === 0;
-        render();
+        const ws = wb.Sheets[sheetName];
+
+        // Matriz cruda
+        const aoa = XLSX.utils.sheet_to_json(ws, {header:1, defval:""});
+        if (!aoa.length) { $loadInfo.textContent="Hoja vacía"; return; }
+
+        // Tomar encabezados y datos dentro del rango F..EG
+        const hdrRow = aoa[0];
+        headers = hdrRow.slice(START_COL, END_COL+1).map(h => String(h||"").trim());
+        // Si algún encabezado viene vacío, genera uno genérico (Col_F, Col_G, etc.)
+        headers = headers.map((h,i)=> h || `Col_${i+START_COL+1}`);
+
+        rows = [];
+        for (let r=1; r<aoa.length; r++){
+          const slice = aoa[r].slice(START_COL, END_COL+1);
+          // ¿Tiene algún valor?
+          const hasValue = slice.some(v => String(v||"").trim() !== "");
+          if (!hasValue) continue;
+          // Construir objeto solo con campos no vacíos
+          const obj = {};
+          headers.forEach((h,idx)=>{
+            const val = slice[idx];
+            if (String(val||"").trim() !== "") obj[h] = val;
+          });
+          // Si después de quitar vacíos quedó sin claves, saltar
+          if (Object.keys(obj).length === 0) continue;
+          rows.push(obj);
+        }
+
+        $loadInfo.textContent = `Hoja: ${sheetName} — Equipos cargados (F..EG): ${rows.length}`;
+        $btnExport.disabled = rows.length===0;
+        applyFilter();
       };
       reader.readAsArrayBuffer(file);
     }
+
+    function applyFilter(){
+      const q = norm($q.value);
+      filtered = rows.filter(obj => {
+        if (!q) return true;
+        return Object.values(obj).some(v => norm(v).includes(q));
+      });
+      renderCards();
+      $countShown.textContent = filtered.length;
+    }
+
+    function renderCards(){
+      $cards.innerHTML = "";
+      if (!filtered.length){
+        $cards.innerHTML = `<div class="text-center muted">No hay resultados con el criterio actual.</div>`;
+        return;
+      }
+      // Heurística de título de tarjeta: busca campo 'Equipo' o 'Descripción'
+      filtered.forEach((obj, idx) => {
+        const keys = Object.keys(obj);
+        const keyEquipo = keys.find(k => /equipo|asset|tag/i.test(k)) || keys.find(k => /descrip/i.test(k)) || keys[0];
+        const titulo = String(obj[keyEquipo] ?? `Equipo ${idx+1}`);
+
+        const kv = keys.map(k => `<div class="muted">${k}</div><div>${obj[k]}</div>`).join("");
+
+        const card = document.createElement("div");
+        card.className = "card bg-white rounded-2xl p-4 md:p-6";
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <div class="text-base md:text-lg font-semibold">${titulo}</div>
+              <div class="mt-3 kv">${kv}</div>
+            </div>
+            <div class="text-sm muted">#${idx+1}</div>
+          </div>
+        `;
+        $cards.appendChild(card);
+      });
+    }
+
+    // Eventos
+    $file.addEventListener("change", e => { const f=e.target.files[0]; if(f) readFile(f); });
+    ["dragenter","dragover"].forEach(ev=> $drop.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); $drop.classList.add("dragover"); }));
+    ["dragleave","drop"].forEach(ev=> $drop.addEventListener(ev,e=>{ e.preventDefault(); e.stopPropagation(); $drop.classList.remove("dragover"); }));
+    $drop.addEventListener("drop",e=>{ if(e.dataTransfer.files && e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]); });
+
+    $q.addEventListener("input", applyFilter);
+    $btnClear.addEventListener("click", ()=>{ $q.value=""; applyFilter(); });
+
+    // Exportar CSV (solo lo filtrado)
+    function exportCSV(){
+      const keys = new Set();
+      filtered.forEach(obj => Object.keys(obj).forEach(k=>keys.add(k)));
+      const cols = Array.from(keys);
+      const esc = v => {
+        if (v==null) return "";
+        const s = String(v).replace(/"/g,'""');
+        return /[",\n]/.test(s) ? `"${s}"` : s;
+      };
+      const header = cols.join(",");
+      const lines = filtered.map(obj => cols.map(c => esc(obj[c])).join(","));
+      const csv = [header, ...lines].join("\n");
+      const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = "equipos_F_a_EG.csv"; a.click();
+      URL.revokeObjectURL(url);
+    }
+    $btnExport.addEventListener("click", exportCSV);
   </script>
 </body>
 </html>
