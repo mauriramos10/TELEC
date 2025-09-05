@@ -67,117 +67,7 @@
       <button class="btn secondary" id="btn-cambiar-resp" title="Define el responsable">Cambiar responsable</button>
     </div>
 
-    <section class="card">
-      <h2 style="margin:0 0 8px 0">Bienvenido</h2>
-      <p class="muted">Este es el esqueleto inicial de la aplicación. El encabezado muestra el logo, la fecha y hora actuales en la zona horaria de Guatemala, el nombre del área, además del ingenio, ubicación y responsable. Desde aquí iremos agregando módulos (registros, buscadores, reportes, etc.).</p>
-    </section>
-  </div>
-
-  <script>
-    const GT_TZ = 'America/Guatemala';
-    function updateClock(){
-      const now = new Date();
-      const time = new Intl.DateTimeFormat('es-GT', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: GT_TZ }).format(now);
-      const date = new Intl.DateTimeFormat('es-GT', { weekday: 'long', year: 'numeric', month: 'long', day: '2-digit', timeZone: GT_TZ }).format(now);
-      document.getElementById('clock').textContent = time;
-      document.getElementById('date').textContent = date.charAt(0).toUpperCase() + date.slice(1);
-    }
-    updateClock();
-    setInterval(updateClock, 1000);
-
-    document.getElementById('btn-imprimir').addEventListener('click', () => window.print());
-    document.getElementById('btn-cambiar-area').addEventListener('click', () => {
-      const current = document.querySelector('.area div').textContent.trim();
-      const next = prompt('Escribe el nombre del área:', current);
-      if(next && next.trim()){
-        document.querySelector('.area div').textContent = next.trim();
-        document.title = `Pantaleon · ${next.trim()}`;
-      }
-    });
-
-    function getParam(name){
-      const p = new URLSearchParams(window.location.search);
-      return p.get(name);
-    }
-
-    const responsableEl = document.getElementById('responsable');
-    function askResponsable(pref=''){
-      const name = prompt('Escribe el nombre del responsable:', pref || responsableEl.textContent.replace('(definir)','').trim());
-      if(name && name.trim()){
-        responsableEl.textContent = name.trim();
-        localStorage.setItem('pant_responsable', name.trim());
-      }
-    }
-    const savedResp = localStorage.getItem('pant_responsable');
-    const qpResp = getParam('responsable');
-    if(qpResp){
-      responsableEl.textContent = qpResp;
-      localStorage.setItem('pant_responsable', qpResp);
-    } else if(savedResp){
-      responsableEl.textContent = savedResp;
-    } else {
-      askResponsable('');
-    }
-    const btnResp = document.getElementById('btn-cambiar-resp');
-    if(btnResp){ btnResp.addEventListener('click', () => askResponsable('')); }
-
-    const ingenioEl = document.getElementById('ingenio');
-    const ubicEl = document.getElementById('ubicacion');
-    const qpIng = getParam('ingenio');
-    const qpUbi = getParam('ubicacion');
-    if(qpIng){ ingenioEl.textContent = qpIng; }
-    if(qpUbi){ ubicEl.textContent = qpUbi; }
-  </script>
-
-  <!-- Selector de equipos -->
-  <section class="max-w-6xl mx-auto p-3 md:p-6">
-    <div class="bg-white rounded-2xl border card p-3 md:p-4">
-      <h2 style="margin:0 0 8px 0">SELECCIONE EQUIPO</h2>
-<div id="equiposToolbar" class="flex flex-wrap gap-2">
-        <button type="button" class="btn secondary" data-eq="MOTOR ELECTRICO">MOTOR ELECTRICO</button>
-        <button type="button" class="btn secondary" data-eq="TRANSFORMADOR">TRANSFORMADOR</button>
-        <button type="button" class="btn secondary" data-eq="AIRE ACONDICIONADO">AIRE ACONDICIONADO</button>
-        <button type="button" class="btn secondary" data-eq="VARIADOR DE FRECUENCIA">VARIADOR DE FRECUENCIA</button>
-        <button type="button" class="btn secondary" data-eq="ARRANCADOR DIRECTO/SUAVE">ARRANCADOR DIRECTO/SUAVE</button>
-        <button type="button" class="btn secondary" data-eq="MANEJADORA DE AIRE">MANEJADORA DE AIRE</button>
-        <button type="button" class="btn secondary" data-eq="CHILLER">CHILLER</button>
-      </div>
-    </div>
-  </section>
-
-  <script>
-    (function(){
-      const tb = document.getElementById('equiposToolbar');
-      if(!tb) return;
-      tb.addEventListener('click', (e)=>{
-        const btn = e.target.closest('button[data-eq]');
-        if(!btn) return;
-        tb.querySelectorAll('button[data-eq]').forEach(b=>b.classList.remove('active','bg-indigo-600','text-white','border-indigo-600'));
-        btn.classList.add('active','bg-indigo-600','text-white','border-indigo-600');
-        window.EQUIPO_SELECCION = btn.dataset.eq;
-        window.dispatchEvent(new CustomEvent('equipo-seleccion',{ detail: btn.dataset.eq }));
-      });
-      // Selección inicial opcional
-      const first = tb.querySelector('button[data-eq]');
-      if(first){ first.click(); }
-    })();
-  </script>
-
-  <section class="max-w-6xl mx-auto p-3 md:p-6">
-    <div class="bg-white rounded-2xl border card p-4 md:p-6">
-      <div class="grid md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-slate-700">Cargar Excel (F..EG)</label>
-          <input id="fileInput" type="file" accept=".xlsx,.xls" class="mt-1 w-full border rounded-xl px-3 py-2" />
-          <p class="text-xs text-slate-500 mt-1">Se procesa localmente. Rango usado: columnas F a EG (incl.).</p>
-        </div>
-        <div>
-          <div id="drop" class="dropzone">Arrastra y suelta tu Excel aquí<br><span class="text-xs text-slate-500">(o usa el selector)</span></div>
-          <p id="loadInfo" class="text-xs text-slate-500 mt-2">Sin datos cargados</p>
-        </div>
-      </div>
-    </div>
-  </section>
+    
 
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -333,5 +223,45 @@
 })();
 </script>
 
+
+<script>
+(function(){
+  const $desc = document.getElementById('descEquipo');
+  if(!$desc) return;
+
+  function setDesc(lines){
+    if(!lines || !lines.length){
+      $desc.innerHTML = 'No hay descripción definida para este tipo.';
+      return;
+    }
+    const ul = document.createElement('ul');
+    ul.className = 'list-disc pl-6';
+    lines.forEach(t => { const li=document.createElement('li'); li.textContent=t; ul.appendChild(li); });
+    $desc.innerHTML = '';
+    $desc.appendChild(ul);
+  }
+
+  const MAP = {
+    'MOTOR ELECTRICO': [
+      'Número de rodamiento lado acople',
+      'Número de rodamiento lado ventilador'
+    ],
+    'VARIADOR DE FRECUENCIA': [
+      'Serie del VDF',
+      'Marca del VDF',
+      'Potencia (HP)'
+    ]
+  };
+
+  window.addEventListener('equipo-seleccion', (ev)=>{
+    const tipo = (ev.detail || '').toUpperCase();
+    if (MAP[tipo]) setDesc(MAP[tipo]); else setDesc([]);
+  });
+
+  // Si ya hay una selección inicial (toolbar hace click al primero), intenta reflejarla
+  if (window.EQUIPO_SELECCION && MAP[window.EQUIPO_SELECCION])
+    setDesc(MAP[window.EQUIPO_SELECCION]);
+})();
+</script>
 </body>
 </html>
