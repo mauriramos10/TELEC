@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ELECTRICIDAD</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     .btn { display:inline-flex; align-items:center; gap:.5rem; padding:.5rem .75rem; border-radius:.75rem; border:1px solid #cbd5e1; background:#fff; font-size:14px; }
     .btn.secondary { background:#fff; color:#0f172a; }
@@ -13,10 +14,11 @@
     .muted { color:#64748b; }
     .input { width:100%; border:1px solid #cbd5e1; border-radius:.75rem; padding:.5rem .75rem; font-size:14px; }
     .label { font-size: .875rem; color:#0f172a; font-weight:500; }
+    .kv { display:grid; grid-template-columns: 280px 1fr; gap:.5rem 1rem; }
+    @media (max-width: 640px){ .kv { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900">
-  <!-- Encabezado / HERO -->
   <section class="max-w-6xl mx-auto p-3 md:p-6">
     <div class="card bg-white rounded-2xl p-5 md:p-7 flex items-center gap-4 md:gap-8">
       <div class="flex items-center gap-3 shrink-0">
@@ -53,7 +55,6 @@
   </section>
 
   <main class="max-w-6xl mx-auto p-3 md:p-6 space-y-6">
-    <!-- SELECCIONE EQUIPO -->
     <section class="bg-white rounded-2xl border card p-4 md:p-6">
       <h2 class="text-lg font-semibold mb-3">SELECCIONE EQUIPO</h2>
       <div id="equiposToolbar" class="flex flex-wrap gap-2">
@@ -67,40 +68,39 @@
       </div>
     </section>
 
-    <!-- NUMERO DE EQUIPO SAP -->
     <section class="bg-white rounded-2xl border card p-4 md:p-6">
       <h2 class="text-lg font-semibold mb-3">NUMERO DE EQUIPO SAP</h2>
-      <div class="grid md:grid-cols-2 gap-4">
-        <div>
-          <label class="label" for="sapEquipo">EQUIPO SAP:</label>
-          <input id="sapEquipo" type="text" class="input mt-1" placeholder="Ej. 1002345" />
+      <div class="grid md:grid-cols-3 gap-4 items-end">
+        <div class="md:col-span-2 grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="label" for="sapEquipo">EQUIPO SAP:</label>
+            <input id="sapEquipo" type="text" class="input mt-1" placeholder="Ej. 1002345" />
+          </div>
+          <div>
+            <label class="label" for="sapNombre">NOMBRE DEL EQUIPO:</label>
+            <input id="sapNombre" type="text" class="input mt-1" placeholder="Ej. Motor Extractor #1" />
+          </div>
         </div>
         <div>
-          <label class="label" for="sapNombre">NOMBRE DEL EQUIPO:</label>
-          <input id="sapNombre" type="text" class="input mt-1" placeholder="Ej. Motor Extractor #1" />
+          <label class="label" for="bnSelect">SELECCIONAR BN:</label>
+          <select id="bnSelect" class="input mt-1"></select>
+          <p id="loadInfo" class="text-xs muted mt-1">Cargando Excel…</p>
         </div>
       </div>
     </section>
 
-    <!-- DESCRIPCIÓN DEL EQUIPO -->
     <section class="bg-white rounded-2xl border card p-4 md:p-6">
       <h2 class="text-lg font-semibold mb-3">DESCRIPCIÓN DEL EQUIPO</h2>
-      <div id="descEquipo" class="text-sm text-slate-700">
-        Selecciona un tipo de equipo para ver su descripción.
-      </div>
+      <div id="descEquipo" class="text-sm text-slate-700 kv"></div>
     </section>
 
-    <!-- CALIDAD DE MANTENIMIENTO -->
     <section class="bg-white rounded-2xl border card p-4 md:p-6">
       <h2 class="text-lg font-semibold mb-3">CALIDAD DE MANTENIMIENTO</h2>
-      <div id="calidadEquipo" class="text-sm text-slate-700">
-        Cambia según el equipo seleccionado.
-      </div>
+      <div id="calidadEquipo" class="text-sm text-slate-700 kv"></div>
     </section>
   </main>
 
   <script>
-    // Reloj/fecha
     const clockEl = document.getElementById("clock");
     const dateEl = document.getElementById("dateLabel");
     function updateClock(){
@@ -115,7 +115,54 @@
     }
     updateClock(); setInterval(updateClock, 1000);
 
-    // Descripción por equipo
+    // === Excel ===
+    const EXCEL_URL = encodeURI("Avisos _ OT TELEC 1.xlsx");
+    function colLetterToIndex(col){ let n=0; for(let i=0;i<col.length;i++){ n=n*26+(col.charCodeAt(i)-64);} return n-1; }
+    const START_COL = colLetterToIndex("F");
+    const END_COL   = colLetterToIndex("EG");
+    const BN_INDEX  = colLetterToIndex("BN");
+
+    let headers = [];
+    let bnMap = new Map();
+    function norm(s){ return (s==null?"":String(s)).normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase(); }
+
+    async function loadExcel(){
+      const res = await fetch(EXCEL_URL);
+      if(!res.ok){ document.getElementById("loadInfo").textContent = "No se pudo cargar el Excel."; return; }
+      const buf = await res.arrayBuffer();
+      const wb = XLSX.read(new Uint8Array(buf), {type:"array"});
+      const sheetName = wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const aoa = XLSX.utils.sheet_to_json(ws, {header:1, defval:""});
+      if(!aoa.length){ document.getElementById("loadInfo").textContent = "Hoja vacía."; return; }
+
+      const hdrRow = aoa[0];
+      headers = hdrRow.slice(START_COL, END_COL+1).map(h => String(h||"").trim());
+      headers = headers.map((h,i)=> h || `Col_${i+START_COL+1}`);
+
+      bnMap.clear();
+      for(let r=1; r<aoa.length; r++){
+        const full = aoa[r];
+        const bnVal = String(full[BN_INDEX] ?? "").trim();
+        const slice = full.slice(START_COL, END_COL+1);
+        const obj = {};
+        headers.forEach((h,idx)=>{
+          const val = slice[idx];
+          if(String(val||"").trim()!==""){ obj[h] = val; }
+        });
+        if (bnVal && Object.keys(obj).length){
+          bnMap.set(bnVal, obj);
+        }
+      }
+      const $bn = document.getElementById("bnSelect");
+      $bn.innerHTML = "";
+      const opt0 = document.createElement("option"); opt0.value=""; opt0.textContent="— Selecciona BN —"; $bn.appendChild(opt0);
+      Array.from(bnMap.keys()).sort((a,b)=> String(a).localeCompare(String(b),'es',{sensitivity:'base'})).forEach(key => {
+        const o=document.createElement("option"); o.value=key; o.textContent=key; $bn.appendChild(o);
+      });
+      document.getElementById("loadInfo").textContent = `Hoja: ${sheetName} · Registros BN: ${bnMap.size}`;
+    }
+
     const DESC_MAP = {
       "MOTOR ELECTRICO": [
         "NUMERO DE RODAMIENTO LADO ACOPLE",
@@ -125,52 +172,14 @@
         "POTENCIA (HP o KW)",
         "RPM"
       ],
-      "VARIADOR DE FRECUENCIA": [
-        "Serie del VDF",
-        "Marca del VDF",
-        "Potencia (HP)"
-      ],
-      "TRANSFORMADOR": [
-        "Potencia (kVA)",
-        "Tensión primaria (kV)",
-        "Tensión secundaria (kV/V)",
-        "Marca",
-        "Serie"
-      ],
-      "AIRE ACONDICIONADO": [
-        "Capacidad (BTU)",
-        "Tipo (Split/Package)",
-        "Refrigerante",
-        "Voltaje de alimentación",
-        "Marca",
-        "Serie"
-      ],
-      "ARRANCADOR DIRECTO/SUAVE": [
-        "Tipo (Directo/Suave)",
-        "Corriente nominal (A)",
-        "Voltaje (V)",
-        "Rango de potencia (HP)",
-        "Marca",
-        "Serie"
-      ],
-      "MANEJADORA DE AIRE": [
-        "Caudal nominal (CFM)",
-        "Tipo de filtros",
-        "Velocidad/Etapas",
-        "Voltaje de alimentación",
-        "Marca",
-        "Serie"
-      ],
-      "CHILLER": [
-        "Capacidad (TR)",
-        "Refrigerante",
-        "Voltaje de alimentación",
-        "Marca",
-        "Serie"
-      ]
+      "VARIADOR DE FRECUENCIA": [ "Serie del VDF", "Marca del VDF", "Potencia (HP)" ],
+      "TRANSFORMADOR": [ "Potencia (kVA)", "Tensión primaria (kV)", "Tensión secundaria (kV/V)", "Marca", "Serie" ],
+      "AIRE ACONDICIONADO": [ "Capacidad (BTU)", "Tipo (Split/Package)", "Refrigerante", "Voltaje de alimentación", "Marca", "Serie" ],
+      "ARRANCADOR DIRECTO/SUAVE": [ "Tipo (Directo/Suave)", "Corriente nominal (A)", "Voltaje (V)", "Rango de potencia (HP)", "Marca", "Serie" ],
+      "MANEJADORA DE AIRE": [ "Caudal nominal (CFM)", "Tipo de filtros", "Velocidad/Etapas", "Voltaje de alimentación", "Marca", "Serie" ],
+      "CHILLER": [ "Capacidad (TR)", "Refrigerante", "Voltaje de alimentación", "Marca", "Serie" ]
     };
 
-    // Calidad de mantenimiento
     const QUALITY_MAP = {
       "MOTOR ELECTRICO": [
         "¿SE CAMBIO RODAMIENTO LADO ACOPLE?",
@@ -192,38 +201,109 @@
       "CHILLER": []
     };
 
-    const tb = document.getElementById("equiposToolbar");
-    const desc = document.getElementById("descEquipo");
-    const calidad = document.getElementById("calidadEquipo");
+    const PATTERNS = {
+      "NUMERO DE RODAMIENTO LADO ACOPLE": /(rodamiento|bearing).*acople/i,
+      "NUMERO DE RODAMIENTO LADO VENTILADOR": /(rodamiento|bearing).*(ventilador|fan)/i,
+      "DIAMETRO DE VENTILADOR (MEDIDA EXTERNA DE VENTILADOR)": /(diam(etro)?|ø).*ventilador/i,
+      "FRAME": /\bframe\b/i,
+      "POTENCIA (HP o KW)": /(potencia|hp|kw)/i,
+      "RPM": /\brpm\b/i,
+      "¿SE CAMBIO RODAMIENTO LADO ACOPLE\?": /(cambio|cambi[oó]).*(rodamiento).*acople/i,
+      "SE MAQUINO TAPADERA LADO ACOPLE": /(maquin(o|ó)|mecaniz(ad)?o).*tapadera.*acople/i,
+      "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA LADO ACOPLE": /(medid(a|o)).*tapadera.*(mile(s|simas)|mil).*acople/i,
+      "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA": /(medid(a|o)).*tapadera.*(mile(s|simas)|mil)(?!.*(acople|ventilador))/i,
+      "¿SE CAMBIO RODAMIENTO LADO VENTILADOR\?": /(cambio|cambi[oó]).*(rodamiento).*(ventilador|fan)/i,
+      "SE MAQUINO TAPADERA LADO VENTILADOR": /(maquin(o|ó)|mecaniz(ad)?o).*tapadera.*(ventilador|fan)/i,
+      "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA LADO VENTILADOR": /(medid(a|o)).*tapadera.*(mile(s|simas)|mil).*(ventilador|fan)/i,
+      "MEDICION DE AISLAMIENTO DE MOTOR (MEGA OHM)": /(aislam(iento)?|meg(a)?\s*ohm|megger|resistencia.*aislamiento)/i,
+      "MEDICION DE IP (MOTORES MAYORES DE 100 HP)": /(ip|corriente|prueba).*motores?.*(100\s*hp|>\s*100)/i,
+      "ESTADO DE LA BOBINADO": /(estado).*bobinad/o/i,
+      "Serie del VDF": /(serie|serial|s\/?n|sn).*vdf|variador/i,
+      "Marca del VDF": /marca.*(vdf|variador)|^(marca)$/i,
+      "Potencia (HP)": /(potencia|hp)(?!.*kw)/i,
+      "Potencia (kVA)": /(potencia).*kva/i,
+      "Tensión primaria (kV)": /(tensi[oó]n|voltaje).*primaria/i,
+      "Tensión secundaria (kV/V)": /(tensi[oó]n|voltaje).*secundaria/i,
+      "Marca": /^marca$/i,
+      "Serie": /^serie$/i,
+      "Capacidad (BTU)": /(capacidad).*btu/i,
+      "Tipo (Split/Package)": /(tipo).*(split|package)/i,
+      "Refrigerante": /refrigerante/i,
+      "Voltaje de alimentación": /(voltaje|tensi[oó]n).*(alimentaci[oó]n|suministro)/i,
+      "Tipo (Directo/Suave)": /(directo|suave)/i,
+      "Corriente nominal (A)": /(corriente).*nominal/i,
+      "Voltaje (V)": /(voltaje|tensi[oó]n)(?!.*alimentaci[oó]n)/i,
+      "Rango de potencia (HP)": /(rango).*potencia.*hp/i,
+      "Caudal nominal (CFM)": /(caudal).*cfm/i,
+      "Tipo de filtros": /(filtros?)/i,
+      "Velocidad/Etapas": /(velocidad|etapas?)/i,
+      "Capacidad (TR)": /(capacidad).*tr\b/i
+    };
 
-    function renderList(el, lines, emptyMsg){
-      if(!lines || !lines.length){
-        el.innerHTML = `<span class='text-slate-500'>${emptyMsg}</span>`;
+    function findValue(obj, label){
+      let key = Object.keys(obj).find(k => norm(k) === norm(label));
+      if (key && String(obj[key]).trim()!=="") return obj[key];
+      key = Object.keys(obj).find(k => norm(k).includes(norm(label).slice(0, Math.min(12, label.length))));
+      if (key && String(obj[key]).trim()!=="") return obj[key];
+      const pat = PATTERNS[label];
+      if (pat){
+        key = Object.keys(obj).find(k => pat.test(k));
+        if (key && String(obj[key]).trim()!=="") return obj[key];
+      }
+      return "";
+    }
+
+    function renderKV(el, labels, obj){
+      if (!labels || !labels.length || !obj){
+        el.innerHTML = "<span class='muted'>Selecciona BN y tipo de equipo.</span>";
         return;
       }
-      const ul = document.createElement("ul");
-      ul.className = "list-disc pl-6";
-      lines.forEach(t => { const li=document.createElement("li"); li.textContent=t; ul.appendChild(li); });
-      el.innerHTML = "";
-      el.appendChild(ul);
+      const rows = [];
+      labels.forEach(lab => {
+        const val = findValue(obj, lab);
+        if (String(val||"").trim()!==""){
+          rows.push(`<div class="muted">${lab}</div><div>${val}</div>`);
+        }
+      });
+      el.innerHTML = rows.length ? rows.join("") : "<span class='muted'>No hay datos no vacíos para este equipo en el rango F..EG.</span>";
     }
 
-    function updatePanels(tipo){
-      renderList(desc, DESC_MAP[tipo], "No hay descripción definida para este tipo.");
-      renderList(calidad, QUALITY_MAP[tipo], "Sin campos definidos para este tipo (Calidad de Mantenimiento).");
-    }
+    let tipoActual = "MOTOR ELECTRICO";
+    let bnActual = "";
 
+    const tb = document.getElementById("equiposToolbar");
     tb.addEventListener("click", (e)=>{
       const btn = e.target.closest("button[data-eq]");
       if(!btn) return;
       tb.querySelectorAll("button[data-eq]").forEach(b=>b.classList.remove("active"));
       btn.classList.add("active");
-      updatePanels(btn.dataset.eq);
+      tipoActual = btn.dataset.eq;
+      updatePanels();
     });
 
-    // Selección inicial: MOTOR ELECTRICO
-    const first = tb.querySelector('button[data-eq="MOTOR ELECTRICO"]');
-    if(first){ first.click(); }
+    const $bn = document.getElementById("bnSelect");
+    $bn.addEventListener("change", ()=>{
+      bnActual = $bn.value || "";
+      const row = bnMap.get(bnActual);
+      if(row){
+        const sapNumKey = Object.keys(row).find(k => /equipo\s*sap|\bsap\b/i.test(k));
+        const sapNameKey = Object.keys(row).find(k => /nombre.*equipo|equipo.*nombre/i.test(k));
+        if(sapNumKey) document.getElementById("sapEquipo").value = row[sapNumKey];
+        if(sapNameKey) document.getElementById("sapNombre").value = row[sapNameKey];
+      }
+      updatePanels();
+    });
+
+    function updatePanels(){
+      const obj = bnMap.get(bnActual);
+      renderKV(document.getElementById("descEquipo"), DESC_MAP[tipoActual], obj);
+      renderKV(document.getElementById("calidadEquipo"), QUALITY_MAP[tipoActual], obj);
+    }
+
+    loadExcel().then(()=>{
+      const firstBtn = document.querySelector('#equiposToolbar button[data-eq="MOTOR ELECTRICO"]');
+      if(firstBtn) firstBtn.classList.add("active");
+    });
   </script>
 </body>
 </html>
