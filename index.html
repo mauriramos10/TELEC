@@ -72,6 +72,14 @@
         Selecciona un tipo de equipo para ver su descripción.
       </div>
     </section>
+
+    <!-- CALIDAD DE MANTENIMIENTO -->
+    <section class="bg-white rounded-2xl border card p-4 md:p-6">
+      <h2 class="text-lg font-semibold mb-3">CALIDAD DE MANTENIMIENTO</h2>
+      <div id="calidadEquipo" class="text-sm text-slate-700">
+        Cambia según el equipo seleccionado.
+      </div>
+    </section>
   </main>
 
   <script>
@@ -90,25 +98,16 @@
     }
     updateClock(); setInterval(updateClock, 1000);
 
-    // Descripciones por equipo (exactamente como lo pediste)
-    const MAP = {
+    // ---- MAPAS ----
+    // 1) Descripción del equipo (MOTOR sin campos de "calidad", como pediste)
+    const DESC_MAP = {
       "MOTOR ELECTRICO": [
         "NUMERO DE RODAMIENTO LADO ACOPLE",
         "NUMERO DE RODAMIENTO LADO VENTILADOR",
         "DIAMETRO DE VENTILADOR (MEDIDA EXTERNA DE VENTILADOR)",
         "FRAME",
         "POTENCIA (HP o KW)",
-        "RPM",
-        "¿SE CAMBIO RODAMIENTO LADO ACOPLE?",
-        "SE MAQUINO TAPADERA LADO ACOPLE",
-        "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA LADO ACOPLE",
-        "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA",
-        "¿SE CAMBIO RODAMIENTO LADO VENTILADOR?",
-        "SE MAQUINO TAPADERA LADO VENTILADOR",
-        "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA LADO VENTILADOR",
-        "MEDICION DE AISLAMIENTO DE MOTOR (MEGA OHM)",
-        "MEDICION DE IP (MOTORES MAYORES DE 100 HP)",
-        "ESTADO DE LA BOBINADO"
+        "RPM"
       ],
       "VARIADOR DE FRECUENCIA": [
         "Serie del VDF",
@@ -155,19 +154,47 @@
       ]
     };
 
+    // 2) Calidad de mantenimiento (definido para MOTOR; otros equipos vacíos hasta que nos indiques)
+    const QUALITY_MAP = {
+      "MOTOR ELECTRICO": [
+        "¿SE CAMBIO RODAMIENTO LADO ACOPLE?",
+        "SE MAQUINO TAPADERA LADO ACOPLE",
+        "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA LADO ACOPLE",
+        "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA",
+        "¿SE CAMBIO RODAMIENTO LADO VENTILADOR?",
+        "SE MAQUINO TAPADERA LADO VENTILADOR",
+        "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA LADO VENTILADOR",
+        "MEDICION DE AISLAMIENTO DE MOTOR (MEGA OHM)",
+        "MEDICION DE IP (MOTORES MAYORES DE 100 HP)",
+        "ESTADO DE LA BOBINADO"
+      ],
+      "VARIADOR DE FRECUENCIA": [],
+      "TRANSFORMADOR": [],
+      "AIRE ACONDICIONADO": [],
+      "ARRANCADOR DIRECTO/SUAVE": [],
+      "MANEJADORA DE AIRE": [],
+      "CHILLER": []
+    };
+
     const tb = document.getElementById("equiposToolbar");
     const desc = document.getElementById("descEquipo");
+    const calidad = document.getElementById("calidadEquipo");
 
-    function setDesc(lines){
+    function renderList(el, lines, emptyMsg){
       if(!lines || !lines.length){
-        desc.innerHTML = "<span class='text-slate-500'>No hay descripción definida para este tipo.</span>";
+        el.innerHTML = `<span class='text-slate-500'>${emptyMsg}</span>`;
         return;
       }
       const ul = document.createElement("ul");
       ul.className = "list-disc pl-6";
       lines.forEach(t => { const li=document.createElement("li"); li.textContent=t; ul.appendChild(li); });
-      desc.innerHTML = "";
-      desc.appendChild(ul);
+      el.innerHTML = "";
+      el.appendChild(ul);
+    }
+
+    function updatePanels(tipo){
+      renderList(desc, DESC_MAP[tipo], "No hay descripción definida para este tipo.");
+      renderList(calidad, QUALITY_MAP[tipo], "Sin campos definidos para este tipo (Calidad de Mantenimiento).");
     }
 
     tb.addEventListener("click", (e)=>{
@@ -175,7 +202,7 @@
       if(!btn) return;
       tb.querySelectorAll("button[data-eq]").forEach(b=>b.classList.remove("active"));
       btn.classList.add("active");
-      setDesc(MAP[btn.dataset.eq]);
+      updatePanels(btn.dataset.eq);
     });
 
     // Selección inicial: MOTOR ELECTRICO
