@@ -179,26 +179,34 @@
     };
 
     // Calidad de mantenimiento
-    const QUALITY_MAP = {
-      "MOTOR ELECTRICO": [
-        "¿SE CAMBIO RODAMIENTO LADO ACOPLE?",
-        "SE MAQUINO TAPADERA LADO ACOPLE",
-        "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA LADO ACOPLE",
-        "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA",
-        "¿SE CAMBIO RODAMIENTO LADO VENTILADOR?",
-        "SE MAQUINO TAPADERA LADO VENTILADOR",
-        "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA LADO VENTILADOR",
-        "MEDICION DE AISLAMIENTO DE MOTOR (MEGA OHM)",
-        "MEDICION DE IP (MOTORES MAYORES DE 100 HP)",
-        "ESTADO DE LA BOBINADO"
-      ],
-      "VARIADOR DE FRECUENCIA": [],
-      "TRANSFORMADOR": [],
-      "AIRE ACONDICIONADO": [],
-      "ARRANCADOR DIRECTO/SUAVE": [],
-      "MANEJADORA DE AIRE": [],
-      "CHILLER": []
-    };
+const QUALITY_MAP = {
+  "MOTOR ELECTRICO": [
+    "¿SE CAMBIO RODAMIENTO LADO ACOPLE?",
+    "SE MAQUINO TAPADERA LADO ACOPLE",
+    "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA LADO ACOPLE",
+    "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA",
+    "¿SE CAMBIO RODAMIENTO LADO VENTILADOR?",
+    "SE MAQUINO TAPADERA LADO VENTILADOR",
+    "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA LADO VENTILADOR",
+    "MEDICION DE AISLAMIENTO DE MOTOR (MEGA OHM)",
+    "MEDICION DE IP (MOTORES MAYORES DE 100 HP)",
+    "ESTADO DE LA BOBINADO"
+  ],
+  "VARIADOR DE FRECUENCIA": [],
+  "TRANSFORMADOR": [
+    "¿Hay fuga en los bushings de Alta Tensión?",
+    "¿Hay fuga en los bushings de Baja Tensión?",
+    "¿El transformador tiene puesta a tierra la carcaza?",
+    "Indique el Calibre de Cable y clase de aislamiento (EPR/XLPE/DLO) del Lado Primario (Alta Tensión)",
+    "Cables por Fase (Primario)",
+    "Cables por Fase (Secundario)"
+  ],
+  "AIRE ACONDICIONADO": [],
+  "ARRANCADOR DIRECTO/SUAVE": [],
+  "MANEJADORA DE AIRE": [],
+  "CHILLER": []
+};
+
 
     const tb = document.getElementById("equiposToolbar");
     const desc = document.getElementById("descEquipo");
