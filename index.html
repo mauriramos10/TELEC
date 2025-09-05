@@ -6,9 +6,20 @@
   <title>ELECTRICIDAD</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .btn { display:inline-flex; align-items:center; gap:.5rem; padding:.5rem .75rem; border-radius:.75rem; border:1px solid #cbd5e1; background:#fff; font-size:14px; }
-    .btn.secondary { background:#fff; color:#0f172a; }
-    .btn.active { background:#4f46e5; color:#fff; border-color:#4f46e5; }
+    .btn { 
+      display:inline-flex; 
+      align-items:center; 
+      gap:.5rem; 
+      padding:.5rem .75rem; 
+      border-radius:.75rem; 
+      font-size:14px; 
+      border:1px solid #ea580c; /* naranja corporativo */
+      color:#ea580c;
+      background:#fff;
+      transition: all 0.2s;
+    }
+    .btn:hover { background:#ea580c; color:#fff; }
+    .btn.active { background:#ea580c; color:#fff; border-color:#ea580c; }
     .card { box-shadow: 0 10px 30px rgba(2,6,23,.06); }
     .muted { color:#64748b; }
     .input { width:100%; border:1px solid #cbd5e1; border-radius:.75rem; padding:.5rem .75rem; font-size:14px; }
@@ -20,7 +31,7 @@
   <section class="max-w-6xl mx-auto p-3 md:p-6">
     <div class="card bg-white rounded-2xl p-5 md:p-7 flex items-center gap-4 md:gap-8">
       <div class="flex items-center gap-3 shrink-0">
-        <img src="cb57cd89e9da2498ff60b8362abf3cc9.png" alt="Logo Pantaleon" class="h-16 w-auto">
+        <img src="cb57cd89e9da2498ff60b8362abf3cc9.png" alt="Logo Pantaleon" class="h-24 w-auto">
       </div>
       <div class="text-center grow">
         <div class="text-lg md:text-xl font-semibold">ELECTRICIDAD</div>
@@ -31,7 +42,10 @@
         <div class="muted text-sm" id="dateLabel">—</div>
         <div class="muted text-xs">
           Responsable: <span id="responsableNombre" class="font-medium lowercase">mauricio ramos</span>
-          <button onclick="cambiarResponsable()" class="ml-2 text-blue-600 underline text-xs">Cambiar</button>
+          <button onclick="cambiarResponsable()" 
+                  class="ml-2 px-3 py-1.5 bg-orange-500 text-white rounded-lg text-xs hover:bg-orange-600 transition">
+            Cambiar
+          </button>
         </div>
       </div>
     </div>
@@ -43,13 +57,13 @@
     <section class="bg-white rounded-2xl border card p-4 md:p-6">
       <h2 class="text-lg font-semibold mb-3">SELECCIONE EQUIPO</h2>
       <div id="equiposToolbar" class="flex flex-wrap gap-2">
-        <button type="button" class="btn secondary" data-eq="MOTOR ELECTRICO">MOTOR ELECTRICO</button>
-        <button type="button" class="btn secondary" data-eq="TRANSFORMADOR">TRANSFORMADOR</button>
-        <button type="button" class="btn secondary" data-eq="AIRE ACONDICIONADO">AIRE ACONDICIONADO</button>
-        <button type="button" class="btn secondary" data-eq="VARIADOR DE FRECUENCIA">VARIADOR DE FRECUENCIA</button>
-        <button type="button" class="btn secondary" data-eq="ARRANCADOR DIRECTO/SUAVE">ARRANCADOR DIRECTO/SUAVE</button>
-        <button type="button" class="btn secondary" data-eq="MANEJADORA DE AIRE">MANEJADORA DE AIRE</button>
-        <button type="button" class="btn secondary" data-eq="CHILLER">CHILLER</button>
+        <button type="button" class="btn" data-eq="MOTOR ELECTRICO">MOTOR ELECTRICO</button>
+        <button type="button" class="btn" data-eq="TRANSFORMADOR">TRANSFORMADOR</button>
+        <button type="button" class="btn" data-eq="AIRE ACONDICIONADO">AIRE ACONDICIONADO</button>
+        <button type="button" class="btn" data-eq="VARIADOR DE FRECUENCIA">VARIADOR DE FRECUENCIA</button>
+        <button type="button" class="btn" data-eq="ARRANCADOR DIRECTO/SUAVE">ARRANCADOR DIRECTO/SUAVE</button>
+        <button type="button" class="btn" data-eq="MANEJADORA DE AIRE">MANEJADORA DE AIRE</button>
+        <button type="button" class="btn" data-eq="CHILLER">CHILLER</button>
       </div>
     </section>
 
