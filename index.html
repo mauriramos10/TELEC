@@ -6,7 +6,6 @@
   <title>ELECTRICIDAD</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Fallback styles for buttons similar to tus secundarios */
     .btn { display:inline-flex; align-items:center; gap:.5rem; padding:.5rem .75rem; border-radius:.75rem; border:1px solid #cbd5e1; background:#fff; font-size:14px; }
     .btn.secondary { background:#fff; color:#0f172a; }
     .btn.active { background:#4f46e5; color:#fff; border-color:#4f46e5; }
@@ -91,11 +90,25 @@
     }
     updateClock(); setInterval(updateClock, 1000);
 
-    // Descripciones por equipo (puedes editar las etiquetas a gusto)
+    // Descripciones por equipo (exactamente como lo pediste)
     const MAP = {
       "MOTOR ELECTRICO": [
-        "Número de rodamiento lado acople",
-        "Número de rodamiento lado ventilador"
+        "NUMERO DE RODAMIENTO LADO ACOPLE",
+        "NUMERO DE RODAMIENTO LADO VENTILADOR",
+        "DIAMETRO DE VENTILADOR (MEDIDA EXTERNA DE VENTILADOR)",
+        "FRAME",
+        "POTENCIA (HP o KW)",
+        "RPM",
+        "¿SE CAMBIO RODAMIENTO LADO ACOPLE?",
+        "SE MAQUINO TAPADERA LADO ACOPLE",
+        "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA LADO ACOPLE",
+        "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA",
+        "¿SE CAMBIO RODAMIENTO LADO VENTILADOR?",
+        "SE MAQUINO TAPADERA LADO VENTILADOR",
+        "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA LADO VENTILADOR",
+        "MEDICION DE AISLAMIENTO DE MOTOR (MEGA OHM)",
+        "MEDICION DE IP (MOTORES MAYORES DE 100 HP)",
+        "ESTADO DE LA BOBINADO"
       ],
       "VARIADOR DE FRECUENCIA": [
         "Serie del VDF",
@@ -147,7 +160,7 @@
 
     function setDesc(lines){
       if(!lines || !lines.length){
-        desc.innerHTML = "<span class='text-slate-500'>No hay descripción definida para este tipo. Indícame los campos y la ajusto.</span>";
+        desc.innerHTML = "<span class='text-slate-500'>No hay descripción definida para este tipo.</span>";
         return;
       }
       const ul = document.createElement("ul");
