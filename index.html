@@ -11,6 +11,8 @@
     .btn.active { background:#4f46e5; color:#fff; border-color:#4f46e5; }
     .card { box-shadow: 0 10px 30px rgba(2,6,23,.06); }
     .muted { color:#64748b; }
+    .input { width:100%; border:1px solid #cbd5e1; border-radius:.75rem; padding:.5rem .75rem; font-size:14px; }
+    .label { font-size: .875rem; color:#0f172a; font-weight:500; }
   </style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900">
@@ -65,6 +67,21 @@
       </div>
     </section>
 
+    <!-- NUMERO DE EQUIPO SAP -->
+    <section class="bg-white rounded-2xl border card p-4 md:p-6">
+      <h2 class="text-lg font-semibold mb-3">NUMERO DE EQUIPO SAP</h2>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="label" for="sapEquipo">EQUIPO SAP:</label>
+          <input id="sapEquipo" type="text" class="input mt-1" placeholder="Ej. 1002345" />
+        </div>
+        <div>
+          <label class="label" for="sapNombre">NOMBRE DEL EQUIPO:</label>
+          <input id="sapNombre" type="text" class="input mt-1" placeholder="Ej. Motor Extractor #1" />
+        </div>
+      </div>
+    </section>
+
     <!-- DESCRIPCIÓN DEL EQUIPO -->
     <section class="bg-white rounded-2xl border card p-4 md:p-6">
       <h2 class="text-lg font-semibold mb-3">DESCRIPCIÓN DEL EQUIPO</h2>
@@ -98,8 +115,7 @@
     }
     updateClock(); setInterval(updateClock, 1000);
 
-    // ---- MAPAS ----
-    // 1) Descripción del equipo (MOTOR sin campos de "calidad", como pediste)
+    // Descripción por equipo
     const DESC_MAP = {
       "MOTOR ELECTRICO": [
         "NUMERO DE RODAMIENTO LADO ACOPLE",
@@ -154,7 +170,7 @@
       ]
     };
 
-    // 2) Calidad de mantenimiento (definido para MOTOR; otros equipos vacíos hasta que nos indiques)
+    // Calidad de mantenimiento
     const QUALITY_MAP = {
       "MOTOR ELECTRICO": [
         "¿SE CAMBIO RODAMIENTO LADO ACOPLE?",
