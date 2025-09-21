@@ -126,7 +126,7 @@
     let excelData = [];
 
     // Cargar Excel automáticamente
-    fetch("Avisos _ OT TELEC 1.xlsx")
+    fetch("avisos.xlsx")
       .then(res => res.arrayBuffer())
       .then(data => {
         const workbook = XLSX.read(data, { type: "array" });
