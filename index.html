@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ELECTRICIDAD</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Librería SheetJS -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Librería PapaParse para leer CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <style>
     .btn { 
       display:inline-flex; 
@@ -123,16 +123,16 @@
       }
     }
 
-    let excelData = [];
+    let csvData = [];
 
-    // Cargar Excel automáticamente
-    fetch("avisos.xlsx")
-      .then(res => res.arrayBuffer())
-      .then(data => {
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        excelData = XLSX.utils.sheet_to_json(sheet);
-      });
+    // Cargar CSV automáticamente
+    Papa.parse("avisos.csv", {
+      download: true,
+      header: true,
+      complete: function(results) {
+        csvData = results.data;
+      }
+    });
 
     // Buscar SAP automáticamente
     document.getElementById("sapEquipo").addEventListener("change", function(){
@@ -148,8 +148,8 @@
         return;
       }
 
-      // Coincidencia parcial
-      const match = excelData.find(row => String(row["SAP"] || "").includes(sap));
+      // Coincidencia parcial en CSV
+      const match = csvData.find(row => String(row["SAP"] || "").includes(sap));
 
       if(match){
         errorEl.classList.add("hidden");
