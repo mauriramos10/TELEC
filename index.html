@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ELECTRICIDAD</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Librería PapaParse para leer CSV -->
+  <!-- PapaParse para leer CSV -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <style>
     .btn { 
@@ -56,20 +56,6 @@
   </section>
 
   <main class="max-w-6xl mx-auto p-3 md:p-6 space-y-6">
-    <!-- SELECCIONE EQUIPO -->
-    <section class="bg-white rounded-2xl border card p-4 md:p-6">
-      <h2 class="text-lg font-semibold mb-3">SELECCIONE EQUIPO</h2>
-      <div id="equiposToolbar" class="flex flex-wrap gap-2">
-        <button type="button" class="btn" data-eq="MOTOR ELECTRICO">MOTOR ELECTRICO</button>
-        <button type="button" class="btn" data-eq="TRANSFORMADOR">TRANSFORMADOR</button>
-        <button type="button" class="btn" data-eq="AIRE ACONDICIONADO">AIRE ACONDICIONADO</button>
-        <button type="button" class="btn" data-eq="VARIADOR DE FRECUENCIA">VARIADOR DE FRECUENCIA</button>
-        <button type="button" class="btn" data-eq="ARRANCADOR DIRECTO/SUAVE">ARRANCADOR DIRECTO/SUAVE</button>
-        <button type="button" class="btn" data-eq="MANEJADORA DE AIRE">MANEJADORA DE AIRE</button>
-        <button type="button" class="btn" data-eq="CHILLER">CHILLER</button>
-      </div>
-    </section>
-
     <!-- NUMERO DE EQUIPO SAP -->
     <section class="bg-white rounded-2xl border card p-4 md:p-6">
       <h2 class="text-lg font-semibold mb-3">NUMERO DE EQUIPO SAP</h2>
@@ -148,7 +134,7 @@
         return;
       }
 
-      // Coincidencia parcial en CSV
+      // Coincidencia parcial
       const match = csvData.find(row => String(row["SAP"] || "").includes(sap));
 
       if(match){
