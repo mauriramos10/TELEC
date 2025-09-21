@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ELECTRICIDAD</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Librería SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     .btn { 
       display:inline-flex; 
@@ -13,7 +15,7 @@
       padding:.5rem .75rem; 
       border-radius:.75rem; 
       font-size:14px; 
-      border:1px solid #ea580c; /* naranja corporativo */
+      border:1px solid #ea580c; 
       color:#ea580c;
       background:#fff;
       transition: all 0.2s;
@@ -24,10 +26,11 @@
     .muted { color:#64748b; }
     .input { width:100%; border:1px solid #cbd5e1; border-radius:.75rem; padding:.5rem .75rem; font-size:14px; }
     .label { font-size: .875rem; color:#0f172a; font-weight:500; }
+    .alert { color: #dc2626; font-weight: 500; }
   </style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900">
-  <!-- Encabezado / HERO -->
+  <!-- Encabezado -->
   <section class="max-w-6xl mx-auto p-3 md:p-6">
     <div class="card bg-white rounded-2xl p-5 md:p-7 flex items-center gap-4 md:gap-8">
       <div class="flex items-center gap-3 shrink-0">
@@ -77,25 +80,22 @@
         </div>
         <div>
           <label class="label" for="sapNombre">NOMBRE DEL EQUIPO:</label>
-          <input id="sapNombre" type="text" class="input mt-1" placeholder="Ej. Motor Extractor #1" />
+          <input id="sapNombre" type="text" class="input mt-1" readonly />
         </div>
       </div>
+      <div id="sapError" class="alert mt-2 hidden"></div>
     </section>
 
     <!-- DESCRIPCIÓN DEL EQUIPO -->
     <section class="bg-white rounded-2xl border card p-4 md:p-6">
       <h2 class="text-lg font-semibold mb-3">DESCRIPCIÓN DEL EQUIPO</h2>
-      <div id="descEquipo" class="text-sm text-slate-700">
-        Selecciona un tipo de equipo para ver su descripción.
-      </div>
+      <div id="descEquipo" class="text-sm text-slate-700">—</div>
     </section>
 
     <!-- CALIDAD DE MANTENIMIENTO -->
     <section class="bg-white rounded-2xl border card p-4 md:p-6">
       <h2 class="text-lg font-semibold mb-3">CALIDAD DE MANTENIMIENTO</h2>
-      <div id="calidadEquipo" class="text-sm text-slate-700">
-        Cambia según el equipo seleccionado.
-      </div>
+      <div id="calidadEquipo" class="text-sm text-slate-700">—</div>
     </section>
   </main>
 
@@ -123,144 +123,47 @@
       }
     }
 
-    // Descripción por equipo
-    const DESC_MAP = {
-      "MOTOR ELECTRICO": [
-        "NUMERO DE RODAMIENTO LADO ACOPLE",
-        "NUMERO DE RODAMIENTO LADO VENTILADOR",
-        "DIAMETRO DE VENTILADOR (MEDIDA EXTERNA DE VENTILADOR)",
-        "FRAME",
-        "POTENCIA (HP o KW)",
-        "RPM"
-      ],
-      "VARIADOR DE FRECUENCIA": [
-        "Serie del VDF",
-        "Marca del VDF",
-        "Potencia (HP)"
-      ],
-      "TRANSFORMADOR": [
-        "Potencia (kVA)",
-        "Tensión primaria (kV)",
-        "Tensión secundaria (kV/V)",
-        "Marca",
-        "Serie"
-      ],
-      "AIRE ACONDICIONADO": [
-        "Capacidad (BTU)",
-        "Tipo (Split/Package)",
-        "Refrigerante",
-        "Voltaje de alimentación",
-        "Marca",
-        "Serie"
-      ],
-      "ARRANCADOR DIRECTO/SUAVE": [
-        "Tipo (Directo/Suave)",
-        "Corriente nominal (A)",
-        "Voltaje (V)",
-        "Rango de potencia (HP)",
-        "Marca",
-        "Serie"
-      ],
-      "MANEJADORA DE AIRE": [
-        "Caudal nominal (CFM)",
-        "Tipo de filtros",
-        "Velocidad/Etapas",
-        "Voltaje de alimentación",
-        "Marca",
-        "Serie"
-      ],
-      "CHILLER": [
-        "Capacidad (TR)",
-        "Refrigerante",
-        "Voltaje de alimentación",
-        "Marca",
-        "Serie"
-      ]
-    };
+    let excelData = [];
 
-    // Calidad de mantenimiento
-const QUALITY_MAP = {
-  "MOTOR ELECTRICO": [
-    "¿SE CAMBIO RODAMIENTO LADO ACOPLE?",
-    "SE MAQUINO TAPADERA LADO ACOPLE",
-    "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA LADO ACOPLE",
-    "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA",
-    "¿SE CAMBIO RODAMIENTO LADO VENTILADOR?",
-    "SE MAQUINO TAPADERA LADO VENTILADOR",
-    "MEDIDA DE TAPADERA EN MILESIMAS DE PULGADA LADO VENTILADOR",
-    "MEDICION DE AISLAMIENTO DE MOTOR (MEGA OHM)",
-    "MEDICION DE IP (MOTORES MAYORES DE 100 HP)",
-    "ESTADO DE LA BOBINADO"
-  ],
-  "VARIADOR DE FRECUENCIA": [
-    "¿ENCONTRÓ ALGÚN COMPONENTE DAÑADO? INDIQUE CUÁL",
-    "LIMPIEZA GENERAL DE TODAS LAS TARJETAS DE CONTROL Y POTENCIA",
-    "MANTENIMIENTO A LOS CAPACITORES",
-    "¿SE LIMPIARON Y PROBARON TODAS LAS TURBINAS?",
-    "¿CAMBIÓ ALGÚN COMPONENTE? INDIQUE CUÁLES"
-  ],
-  "TRANSFORMADOR": [
-    "¿Hay fuga en los bushings de Alta Tensión?",
-    "¿Hay fuga en los bushings de Baja Tensión?",
-    "¿El transformador tiene puesta a tierra la carcaza?",
-    "Indique el Calibre de Cable y clase de aislamiento (EPR/XLPE/DLO) del Lado Primario (Alta Tensión)",
-    "Cables por Fase (Primario)",
-    "Cables por Fase (Secundario)"
-  ],
-  "AIRE ACONDICIONADO": [
-    "ESTADO DE LAS FAJAS",
-    "TIPO DE FAJA (A-38, A-51, A-55, etc.) INDICAR",
-    "ESTADO DEL COMPRESOR",
-    "¿SERPENTIN TENIA FUGAS?",
-    "¿PRUEBA DE PRESION SATISFACTORIA A 120 PSI?",
-    "CAMBIO DE RODAMIENTOS EN MOTOR"
-  ],
-  "ARRANCADOR DIRECTO/SUAVE": [
-    "¿SE CAMBIÓ ALGÚN COMPONENTE? FAVOR DE INDICAR CUÁL"
-  ],
-  "MANEJADORA DE AIRE": [
-    "ESTADO DE LAS FAJAS",
-    "TIPO DE FAJA",
-    "ESTADO DE LOS FILTROS",
-    "ESTADO DE LOS PREFILTROS",
-    "¿EXISTE FUGA EN EL SERPENTIN DE AGUA FRÍA?",
-    "SI ENCONTRÓ FUGAS ¿CUÁNTAS CORRIGIÓ?"
-  ],
-  "CHILLER": []
-};
+    // Cargar Excel automáticamente
+    fetch("Avisos _ OT TELEC 1.xlsx")
+      .then(res => res.arrayBuffer())
+      .then(data => {
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        excelData = XLSX.utils.sheet_to_json(sheet);
+      });
 
-    const tb = document.getElementById("equiposToolbar");
-    const desc = document.getElementById("descEquipo");
-    const calidad = document.getElementById("calidadEquipo");
+    // Buscar SAP automáticamente
+    document.getElementById("sapEquipo").addEventListener("change", function(){
+      const sap = this.value.trim();
+      const errorEl = document.getElementById("sapError");
+      const sapNombre = document.getElementById("sapNombre");
+      const desc = document.getElementById("descEquipo");
+      const calidad = document.getElementById("calidadEquipo");
 
-    function renderList(el, lines, emptyMsg){
-      if(!lines || !lines.length){
-        el.innerHTML = `<span class='text-slate-500'>${emptyMsg}</span>`;
+      if(!sap){
+        errorEl.textContent = "Ingrese un número SAP válido.";
+        errorEl.classList.remove("hidden");
         return;
       }
-      const ul = document.createElement("ul");
-      ul.className = "list-disc pl-6";
-      lines.forEach(t => { const li=document.createElement("li"); li.textContent=t; ul.appendChild(li); });
-      el.innerHTML = "";
-      el.appendChild(ul);
-    }
 
-    function updatePanels(tipo){
-      renderList(desc, DESC_MAP[tipo], "No hay descripción definida para este tipo.");
-      renderList(calidad, QUALITY_MAP[tipo], "Sin campos definidos para este tipo (Calidad de Mantenimiento).");
-    }
+      // Coincidencia parcial
+      const match = excelData.find(row => String(row["SAP"] || "").includes(sap));
 
-    tb.addEventListener("click", (e)=>{
-      const btn = e.target.closest("button[data-eq]");
-      if(!btn) return;
-      tb.querySelectorAll("button[data-eq]").forEach(b=>b.classList.remove("active"));
-      btn.classList.add("active");
-      updatePanels(btn.dataset.eq);
+      if(match){
+        errorEl.classList.add("hidden");
+        sapNombre.value = match["NOMBRE"] || "—";
+        desc.textContent = match["DESCRIPCION"] || "—";
+        calidad.textContent = match["CALIDAD"] || "—";
+      } else {
+        errorEl.textContent = "No se encontró información para este SAP";
+        errorEl.classList.remove("hidden");
+        sapNombre.value = "";
+        desc.textContent = "—";
+        calidad.textContent = "—";
+      }
     });
-
-    // Selección inicial: MOTOR ELECTRICO
-    const first = tb.querySelector('button[data-eq="MOTOR ELECTRICO"]');
-    if(first){ first.click(); }
   </script>
 </body>
 </html>
