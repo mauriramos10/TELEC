@@ -100,11 +100,20 @@
       datos.forEach(item => {
         const div = document.createElement("div");
         div.classList.add("item");
+        
         div.innerHTML = `
           <strong>Ubicación Técnica:</strong> ${item["ubicacion tecnica"] || ""}<br>
           <strong>Código SAP:</strong> ${item["codigo sap"] || ""}<br>
-          <strong>Nombre del Equipo:</strong> ${item["nombre del equipo"] || ""}
+          <strong>Nombre del Equipo:</strong> ${item["nombre del equipo"] || ""}<br>
+          <strong>Número Rodamiento Lado Acople:</strong> ${item["numero de rodamiento lado acople"] || ""}<br>
+          <strong>Número Rodamiento Lado Ventilador:</strong> ${item["numero de rodamiento lado ventilador"] || ""}<br>
+          <strong>Diámetro Ventilador:</strong> ${item["diametro ventilador"] || ""}<br>
+          <strong>Equipo:</strong> ${item["equipo"] || ""}<br>
+          <strong>Potencia:</strong> ${item["potencia"] || ""}<br>
+          <strong>RPM:</strong> ${item["rpm"] || ""}<br>
+          <strong>Área:</strong> ${item["area"] || ""}
         `;
+
 
         const sap = normalizarSAP(item["codigo sap"]);
         const relacionados = datosBombas.filter(c => normalizarSAP(c["codigo sap"]) === sap);
