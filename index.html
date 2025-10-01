@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pantaleon · Búsqueda de Equipos con Componentes</title>
+  <title>Pantaleon · Motores y Transformadores</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background: #f5f7f6; color: #333; }
     .header { display: grid; grid-template-columns: auto 1fr auto; align-items: center; background: white; padding: 15px 30px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); gap: 20px; }
@@ -18,16 +18,12 @@
     .resultados { margin: 20px auto; max-width: 900px; }
     .item { background: white; margin: 20px auto; padding: 15px; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); max-width: 800px; }
     .item strong { color: #f26a21; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 6px; text-align: center; font-size: 14px; }
-    th { background: #f26a21; color: white; }
-    #lectorQR { margin: 20px auto; width: 300px; display: none; }
   </style>
 </head>
 <body>
   <header class="header">
     <div class="logo"><img src="logo.png" alt="Pantaleon Logo"></div>
-    <div class="area">EXTRACCIÓN DE JUGO</div>
+    <div class="area">MOTORES Y TRANSFORMADORES</div>
     <div class="meta">
       <div id="fecha-hora"></div>
       <div>Responsable: <strong id="responsable"></strong></div>
@@ -37,183 +33,79 @@
 
   <div class="search-box">
     <input type="text" id="buscarSAP" placeholder="Buscar por Código SAP">
-    <button class="btn" onclick="abrirQR()">📷 Escanear QR</button>
-    <input type="text" id="buscarNombre" placeholder="Buscar por Nombre de Equipo">
+    <input type="text" id="buscarNombre" placeholder="Buscar por Nombre">
   </div>
 
-  <div id="lectorQR"></div>
   <div class="contador" id="contador"></div>
   <div class="resultados" id="resultados"></div>
 
-  <!-- Librerías externas -->
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
   <script>
-    let datosMotores = [];
-    let datosTransformadores = [];
-    let datosBombas = [];
-
     function normalizarClaves(obj) {
       const nuevo = {};
       for (let key in obj) {
         let k = key.trim().toLowerCase();
-        k = k.normalize("NFD").replace(/[̀-ͯ]/g, ""); // quitar acentos
         nuevo[k] = obj[key];
       }
       return nuevo;
     }
 
-    function normalizarSAP(valor) {
-      if (!valor) return "";
-      return String(parseInt(valor)).trim();
+    function cargarCSV(ruta, callback) {
+      Papa.parse(ruta, {
+        download: true,
+        header: true,
+        complete: function(results) {
+          callback(results.data.map(normalizarClaves));
+        },
+        error: function(err) {
+          console.warn("No se pudo cargar " + ruta);
+          callback([]);
+        }
+      });
     }
 
-    
-Papa.parse("motores.csv", {
-  download: true,
-  header: true,
-  complete: function(results) {
-    datosMotores = results.data.map(normalizarClaves);
-  }
-});
+    let datosMotores = [];
+    let datosTransformadores = [];
 
+    cargarCSV("motores.csv", data => datosMotores = data);
+    cargarCSV("transformadores.csv", data => datosTransformadores = data);
 
-    Papa.parse("transformadores.csv", {
-      download: true,
-      header: true,
-      complete: function(results) {
-        datosTransformadores = results.data.map(normalizarClaves);
-      }
-    });
-
-    Papa.parse("componentes.csv", {
-      download: true,
-      header: true,
-      complete: function(results) {
-        datosBombas = results.data.map(normalizarClaves);
-      }
-    });
-
-    
-function mostrarResultados(datos) {
-  // función vacía para compatibilidad, no usada más
-}
-
-// Mostrar Motores
-function mostrarMotores(datos) {
-  const contenedor = document.getElementById("resultados");
-  datos.forEach(item => {
-    const div = document.createElement("div");
-    div.classList.add("item");
-    div.innerHTML = `<h3 style="color:#f26a21;">MOTOR</h3>` +
-    `
-      <strong>Ubicación Técnica:</strong> ${item["ubicacion tecnica"] || ""}<br>
-      <strong>Código SAP:</strong> ${item["codigo sap"] || ""}<br>
-      <strong>Nombre del Equipo:</strong> ${item["nombre del equipo"] || ""}<br>
-      <strong>Número Rodamiento Lado Acople:</strong> ${item["numero de rodamiento lado acople"] || ""}<br>
-      <strong>Número Rodamiento Lado Ventilador:</strong> ${item["numero de rodamiento lado ventilador"] || ""}<br>
-      <strong>Diámetro Ventilador:</strong> ${item["diametro ventilador"] || ""}<br>
-      <strong>Equipo:</strong> ${item["equipo"] || ""}<br>
-      <strong>Potencia:</strong> ${item["potencia"] || ""}<br>
-      <strong>RPM:</strong> ${item["rpm"] || ""}<br>
-      <strong>Área:</strong> ${item["area"] || ""}
-    `;
-    contenedor.appendChild(div);
-  });
-}
-
-// Mostrar Transformadores
-function mostrarTransformadores(datos) {
-  const contenedor = document.getElementById("resultados");
-  datos.forEach(item => {
-    const div = document.createElement("div");
-    div.classList.add("item");
-    div.innerHTML = `<h3 style="color:#0066cc;">TRANSFORMADOR</h3>` +
-    `
-      <strong>Código SAP:</strong> ${item["codigo sap"] || ""}<br>
-      <strong>Nombre del Transformador:</strong> ${item["nombre del transformador"] || ""}<br>
-      <strong>Potencia (kVA):</strong> ${item["potencia"] || ""}<br>
-      <strong>Tensión Primaria:</strong> ${item["tension primaria"] || ""}<br>
-      <strong>Tensión Secundaria:</strong> ${item["tension secundaria"] || ""}<br>
-      <strong>Ubicación:</strong> ${item["ubicacion"] || ""}
-    `;
-    contenedor.appendChild(div);
-  });
-}
-
-// Filtrar
-function filtrar() {
-  const sap = document.getElementById("buscarSAP").value.toLowerCase();
-  const nombre = document.getElementById("buscarNombre").value.toLowerCase();
-
-  document.getElementById("resultados").innerHTML = "";
-  document.getElementById("contador").innerHTML = "";
-
-  if (sap === "" && nombre === "") return;
-
-  const filtradosMotores = datosMotores.filter(item =>
-    (sap === "" || (String(item["codigo sap"])+"").toLowerCase().includes(sap)) &&
-    (nombre === "" || (item["nombre del equipo"] || "").toLowerCase().includes(nombre))
-  );
-
-  const filtradosTransformadores = datosTransformadores.filter(item =>
-    (sap === "" || (String(item["codigo sap"])+"").toLowerCase().includes(sap)) &&
-    (nombre === "" || (item["nombre del transformador"] || "").toLowerCase().includes(nombre))
-  );
-
-  if (filtradosMotores.length > 0) mostrarMotores(filtradosMotores);
-  if (filtradosTransformadores.length > 0) mostrarTransformadores(filtradosTransformadores);
-
-  const total = filtradosMotores.length + filtradosTransformadores.length;
-  document.getElementById("contador").innerHTML = "Se encontraron " + total + " resultado(s)";
-}
-      contador.innerHTML = "Se encontraron " + datos.length + " equipo(s)";
-
+    function mostrarMotores(datos) {
+      const contenedor = document.getElementById("resultados");
       datos.forEach(item => {
         const div = document.createElement("div");
         div.classList.add("item");
-        div.innerHTML = `
+        div.innerHTML = `<h3 style="color:#f26a21;">MOTOR</h3>` +
+        `
           <strong>Ubicación Técnica:</strong> ${item["ubicacion tecnica"] || ""}<br>
           <strong>Código SAP:</strong> ${item["codigo sap"] || ""}<br>
-          <strong>Nombre del Equipo:</strong> ${item["nombre del equipo"] || ""}
+          <strong>Nombre del Equipo:</strong> ${item["nombre del equipo"] || ""}<br>
+          <strong>Número Rodamiento Lado Acople:</strong> ${item["numero de rodamiento lado acople"] || ""}<br>
+          <strong>Número Rodamiento Lado Ventilador:</strong> ${item["numero de rodamiento lado ventilador"] || ""}<br>
+          <strong>Diámetro Ventilador:</strong> ${item["diametro ventilador"] || ""}<br>
+          <strong>Equipo:</strong> ${item["equipo"] || ""}<br>
+          <strong>Potencia:</strong> ${item["potencia"] || ""}<br>
+          <strong>RPM:</strong> ${item["rpm"] || ""}<br>
+          <strong>Área:</strong> ${item["area"] || ""}
         `;
+        contenedor.appendChild(div);
+      });
+    }
 
-        const sap = normalizarSAP(item["codigo sap"]);
-        const relacionados = datosBombas.filter(c => normalizarSAP(c["codigo sap"]) === sap);
-
-        if (relacionados.length > 0) {
-          div.innerHTML += `<p><strong>Componentes encontrados: ${relacionados.length}</strong></p>`;
-          let tabla = `<table>
-            <thead>
-              <tr>
-                <th>Componente</th>
-                <th>Características</th>
-                <th>Marca</th>
-                <th>Código Repuesto</th>
-                <th>Descripción</th>
-                <th>Posición</th>
-                <th>Año</th>
-              </tr>
-            </thead>
-            <tbody>`;
-
-          relacionados.forEach(c => {
-            tabla += `<tr>
-              <td>${c["componente"] || ""}</td>
-              <td>${c["caracteristicas"] || ""}</td>
-              <td>${c["marca"] || ""}</td>
-              <td>${c["codigo de repuesto"] || ""}</td>
-              <td>${c["descripcion"] || ""}</td>
-              <td>${c["posicion"] || ""}</td>
-              <td>${c["ano"] || ""}</td>
-            </tr>`;
-          });
-
-          tabla += `</tbody></table>`;
-          div.innerHTML += tabla;
-        }
-
+    function mostrarTransformadores(datos) {
+      const contenedor = document.getElementById("resultados");
+      datos.forEach(item => {
+        const div = document.createElement("div");
+        div.classList.add("item");
+        div.innerHTML = `<h3 style="color:#0066cc;">TRANSFORMADOR</h3>` +
+        `
+          <strong>Código SAP:</strong> ${item["codigo sap"] || ""}<br>
+          <strong>Nombre del Transformador:</strong> ${item["nombre del transformador"] || ""}<br>
+          <strong>Potencia (kVA):</strong> ${item["potencia"] || ""}<br>
+          <strong>Tensión Primaria:</strong> ${item["tension primaria"] || ""}<br>
+          <strong>Tensión Secundaria:</strong> ${item["tension secundaria"] || ""}<br>
+          <strong>Ubicación:</strong> ${item["ubicacion"] || ""}
+        `;
         contenedor.appendChild(div);
       });
     }
@@ -221,16 +113,27 @@ function filtrar() {
     function filtrar() {
       const sap = document.getElementById("buscarSAP").value.toLowerCase();
       const nombre = document.getElementById("buscarNombre").value.toLowerCase();
-      if (sap === "" && nombre === "") {
-        document.getElementById("resultados").innerHTML = "";
-        document.getElementById("contador").innerHTML = "";
-        return;
-      }
-      const filtrados = datosEquipos.filter(item => 
+
+      document.getElementById("resultados").innerHTML = "";
+      document.getElementById("contador").innerHTML = "";
+
+      if (sap === "" && nombre === "") return;
+
+      const filtradosMotores = datosMotores.filter(item =>
         (sap === "" || (String(item["codigo sap"])+"").toLowerCase().includes(sap)) &&
         (nombre === "" || (item["nombre del equipo"] || "").toLowerCase().includes(nombre))
       );
-      mostrarResultados(filtrados);
+
+      const filtradosTransformadores = datosTransformadores.filter(item =>
+        (sap === "" || (String(item["codigo sap"])+"").toLowerCase().includes(sap)) &&
+        (nombre === "" || (item["nombre del transformador"] || "").toLowerCase().includes(nombre))
+      );
+
+      if (filtradosMotores.length > 0) mostrarMotores(filtradosMotores);
+      if (filtradosTransformadores.length > 0) mostrarTransformadores(filtradosTransformadores);
+
+      const total = filtradosMotores.length + filtradosTransformadores.length;
+      document.getElementById("contador").innerHTML = "Se encontraron " + total + " resultado(s)";
     }
 
     function actualizarFechaHora() {
@@ -245,22 +148,6 @@ function filtrar() {
         document.getElementById("responsable").innerText = nuevo;
         localStorage.setItem("responsable", nuevo);
       }
-    }
-
-    function abrirQR() {
-      document.getElementById("lectorQR").style.display = "block";
-      const html5QrCode = new Html5Qrcode("lectorQR");
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-        qrCodeMessage => {
-          document.getElementById("buscarSAP").value = qrCodeMessage;
-          filtrar();
-          html5QrCode.stop();
-          document.getElementById("lectorQR").style.display = "none";
-        },
-        errorMessage => {}
-      ).catch(err => { console.error("Error al iniciar QR: ", err); });
     }
 
     window.onload = () => {
