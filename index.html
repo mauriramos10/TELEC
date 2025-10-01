@@ -93,47 +93,64 @@
       }
     });
 
-    function mostrarResultados(datos) {
-      const contenedor = document.getElementById("resultados");
-      const contador = document.getElementById("contador");
-      contenedor.innerHTML = "";
-      contador.innerHTML = "";
+    
+function mostrarResultados(datos) {
+  const contenedor = document.getElementById("resultados");
+  const contador = document.getElementById("contador");
+  contenedor.innerHTML = "";
+  contador.innerHTML = "";
 
-      if (datos.length === 0) {
-        contador.innerHTML = "No se encontraron equipos";
-        return;
-      }
+  if (datos.length === 0) {
+    contador.innerHTML = "No se encontraron equipos";
+    return;
+  }
+
+  contador.innerHTML = "Se encontraron " + datos.length + " resultado(s)";
+
+  datos.forEach(item => {
+    const div = document.createElement("div");
+    div.classList.add("item");
+
+    if (item["nombre del equipo"]) {
+      div.innerHTML = `
+        <strong>Ubicación Técnica:</strong> ${item["ubicacion tecnica"] || ""}<br>
+        <strong>Código SAP:</strong> ${item["codigo sap"] || ""}<br>
+        <strong>Nombre del Equipo:</strong> ${item["nombre del equipo"] || ""}<br>
+        <strong>Número Rodamiento Lado Acople:</strong> ${item["numero de rodamiento lado acople"] || ""}<br>
+        <strong>Número Rodamiento Lado Ventilador:</strong> ${item["numero de rodamiento lado ventilador"] || ""}<br>
+        <strong>Diámetro Ventilador:</strong> ${item["diametro ventilador"] || ""}<br>
+        <strong>Equipo:</strong> ${item["equipo"] || ""}<br>
+        <strong>Potencia:</strong> ${item["potencia"] || ""}<br>
+        <strong>RPM:</strong> ${item["rpm"] || ""}<br>
+        <strong>Área:</strong> ${item["area"] || ""}
+      `;
+    }
+
+    if (item["nombre del transformador"]) {
+      div.innerHTML = `
+        <strong>Código SAP:</strong> ${item["codigo sap"] || ""}<br>
+        <strong>Nombre del Transformador:</strong> ${item["nombre del transformador"] || ""}<br>
+        <strong>Potencia (kVA):</strong> ${item["potencia"] || ""}<br>
+        <strong>Tensión Primaria:</strong> ${item["tension primaria"] || ""}<br>
+        <strong>Tensión Secundaria:</strong> ${item["tension secundaria"] || ""}<br>
+        <strong>Ubicación:</strong> ${item["ubicacion"] || ""}
+      `;
+    }
+
+    contenedor.appendChild(div);
+  });
+}
 
       contador.innerHTML = "Se encontraron " + datos.length + " equipo(s)";
 
       datos.forEach(item => {
         const div = document.createElement("div");
         div.classList.add("item");
-        
-        if (item["nombre del equipo"]) {
-          div.innerHTML = `
-            <strong>Ubicación Técnica:</strong> ${item["ubicacion tecnica"] || ""}<br>
-            <strong>Código SAP:</strong> ${item["codigo sap"] || ""}<br>
-            <strong>Nombre del Equipo:</strong> ${item["nombre del equipo"] || ""}<br>
-            <strong>Número Rodamiento Lado Acople:</strong> ${item["numero de rodamiento lado acople"] || ""}<br>
-            <strong>Número Rodamiento Lado Ventilador:</strong> ${item["numero de rodamiento lado ventilador"] || ""}<br>
-            <strong>Diámetro Ventilador:</strong> ${item["diametro ventilador"] || ""}<br>
-            <strong>Equipo:</strong> ${item["equipo"] || ""}<br>
-            <strong>Potencia:</strong> ${item["potencia"] || ""}<br>
-            <strong>RPM:</strong> ${item["rpm"] || ""}<br>
-            <strong>Área:</strong> ${item["area"] || ""}
-          `;
-        } else if (item["nombre del transformador"]) {
-          div.innerHTML = `
-            <strong>Código SAP:</strong> ${item["codigo sap"] || ""}<br>
-            <strong>Nombre del Transformador:</strong> ${item["nombre del transformador"] || ""}<br>
-            <strong>Potencia (kVA):</strong> ${item["potencia"] || ""}<br>
-            <strong>Tensión Primaria:</strong> ${item["tension primaria"] || ""}<br>
-            <strong>Tensión Secundaria:</strong> ${item["tension secundaria"] || ""}<br>
-            <strong>Ubicación:</strong> ${item["ubicacion"] || ""}
-          `;
-        }
-
+        div.innerHTML = `
+          <strong>Ubicación Técnica:</strong> ${item["ubicacion tecnica"] || ""}<br>
+          <strong>Código SAP:</strong> ${item["codigo sap"] || ""}<br>
+          <strong>Nombre del Equipo:</strong> ${item["nombre del equipo"] || ""}
+        `;
 
         const sap = normalizarSAP(item["codigo sap"]);
         const relacionados = datosBombas.filter(c => normalizarSAP(c["codigo sap"]) === sap);
@@ -174,26 +191,19 @@
       });
     }
 
-    
-function filtrar() {
-  const sap = document.getElementById("buscarSAP").value.toLowerCase();
-  const nombre = document.getElementById("buscarNombre").value.toLowerCase();
-  if (sap === "" && nombre === "") {
-    document.getElementById("resultados").innerHTML = "";
-    document.getElementById("contador").innerHTML = "";
-    return;
-  }
-  const filtradosEquipos = datosEquipos.filter(item =>
-    (sap === "" || (String(item["codigo sap"])+"").toLowerCase().includes(sap)) &&
-    (nombre === "" || (item["nombre del equipo"] || "").toLowerCase().includes(nombre))
-  );
-  const filtradosTransformadores = datosTransformadores.filter(item =>
-    (sap === "" || (String(item["codigo sap"])+"").toLowerCase().includes(sap)) &&
-    (nombre === "" || (item["nombre del transformador"] || "").toLowerCase().includes(nombre))
-  );
-  const filtrados = [...filtradosEquipos, ...filtradosTransformadores];
-  mostrarResultados(filtrados);
-
+    function filtrar() {
+      const sap = document.getElementById("buscarSAP").value.toLowerCase();
+      const nombre = document.getElementById("buscarNombre").value.toLowerCase();
+      if (sap === "" && nombre === "") {
+        document.getElementById("resultados").innerHTML = "";
+        document.getElementById("contador").innerHTML = "";
+        return;
+      }
+      const filtrados = datosEquipos.filter(item => 
+        (sap === "" || (String(item["codigo sap"])+"").toLowerCase().includes(sap)) &&
+        (nombre === "" || (item["nombre del equipo"] || "").toLowerCase().includes(nombre))
+      );
+      mostrarResultados(filtrados);
     }
 
     function actualizarFechaHora() {
