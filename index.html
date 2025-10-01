@@ -50,7 +50,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
   <script>
-    let datosEquipos = [];
+    let datosMotores = [];
     let datosTransformadores = [];
     let datosBombas = [];
 
@@ -69,13 +69,15 @@
       return String(parseInt(valor)).trim();
     }
 
-    Papa.parse("equipos.csv", {
-      download: true,
-      header: true,
-      complete: function(results) {
-        datosEquipos = results.data.map(normalizarClaves);
-      }
-    });
+    
+Papa.parse("motores.csv", {
+  download: true,
+  header: true,
+  complete: function(results) {
+    datosMotores = results.data.map(normalizarClaves);
+  }
+});
+
 
     Papa.parse("transformadores.csv", {
       download: true,
@@ -112,7 +114,8 @@ function mostrarResultados(datos) {
     div.classList.add("item");
 
     if (item["nombre del equipo"]) {
-      div.innerHTML = `
+      div.innerHTML = `<h3 style="color:#f26a21;">MOTOR</h3>` +
+      `
         <strong>Ubicación Técnica:</strong> ${item["ubicacion tecnica"] || ""}<br>
         <strong>Código SAP:</strong> ${item["codigo sap"] || ""}<br>
         <strong>Nombre del Equipo:</strong> ${item["nombre del equipo"] || ""}<br>
@@ -127,7 +130,8 @@ function mostrarResultados(datos) {
     }
 
     if (item["nombre del transformador"]) {
-      div.innerHTML = `
+      div.innerHTML = `<h3 style="color:#0066cc;">TRANSFORMADOR</h3>` +
+      `
         <strong>Código SAP:</strong> ${item["codigo sap"] || ""}<br>
         <strong>Nombre del Transformador:</strong> ${item["nombre del transformador"] || ""}<br>
         <strong>Potencia (kVA):</strong> ${item["potencia"] || ""}<br>
@@ -191,19 +195,26 @@ function mostrarResultados(datos) {
       });
     }
 
-    function filtrar() {
-      const sap = document.getElementById("buscarSAP").value.toLowerCase();
-      const nombre = document.getElementById("buscarNombre").value.toLowerCase();
-      if (sap === "" && nombre === "") {
-        document.getElementById("resultados").innerHTML = "";
-        document.getElementById("contador").innerHTML = "";
-        return;
-      }
-      const filtrados = datosEquipos.filter(item => 
-        (sap === "" || (String(item["codigo sap"])+"").toLowerCase().includes(sap)) &&
-        (nombre === "" || (item["nombre del equipo"] || "").toLowerCase().includes(nombre))
-      );
-      mostrarResultados(filtrados);
+    
+function filtrar() {
+  const sap = document.getElementById("buscarSAP").value.toLowerCase();
+  const nombre = document.getElementById("buscarNombre").value.toLowerCase();
+  if (sap === "" && nombre === "") {
+    document.getElementById("resultados").innerHTML = "";
+    document.getElementById("contador").innerHTML = "";
+    return;
+  }
+  const filtradosMotores = datosMotores.filter(item =>
+    (sap === "" || (String(item["codigo sap"])+"").toLowerCase().includes(sap)) &&
+    (nombre === "" || (item["nombre del equipo"] || "").toLowerCase().includes(nombre))
+  );
+  const filtradosTransformadores = datosTransformadores.filter(item =>
+    (sap === "" || (String(item["codigo sap"])+"").toLowerCase().includes(sap)) &&
+    (nombre === "" || (item["nombre del transformador"] || "").toLowerCase().includes(nombre))
+  );
+  const filtrados = [...filtradosMotores, ...filtradosTransformadores];
+  mostrarResultados(filtrados);
+
     }
 
     function actualizarFechaHora() {
